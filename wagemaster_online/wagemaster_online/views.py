@@ -4,7 +4,7 @@ from django.db import IntegrityError
 import logging
 
 def company_detail(request, company_id):
-    company = Company.objects.get(CompanyIdentity=company_id)
+    company = get_object_or_404(Company, CompanyIdentity=company_id)
     return render(request, 'company_detail.html', {'company': company})
 
 def company_list(request):

@@ -25,6 +25,7 @@
           <td>
             <a href="{% url 'company_update' company.CompanyIdentity %}" class="btn btn-primary btn-sm">Edit</a>
             <a href="{% url 'company_delete' company.CompanyIdentity %}" class="btn btn-danger btn-delete btn-sm">Delete</a>
+            <a href="{% url 'company_detail' company.CompanyIdentity %}" class="btn btn-primary btn-sm">View</a>
           </td>
         </tr>
       {% empty %}

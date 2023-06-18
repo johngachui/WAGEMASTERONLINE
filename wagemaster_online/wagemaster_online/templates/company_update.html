@@ -8,7 +8,7 @@
   <form method="post" action="{% url 'company_update' company.CompanyIdentity %}">
     {% csrf_token %}
     <div class="form-group">
-      <label for="CompanyName">Name:</label>
+      <label for="CompanyName">Company name:</label>
       <input type="text" class="form-control form-control-sm" id="CompanyName" name="CompanyName" value="{{ company.CompanyName }}" required>
     </div>
     <div class="form-group">

@@ -20,9 +20,9 @@ from wagemaster_online.views import company_detail, company_list, company_create
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('company/', company_detail, name='company_detail'),
     path('company/list/', company_list, name='company_list'),
     path('company/create/', company_create, name='company_create'),
     path('company/update/<int:company_id>/', company_update, name='company_update'),
     path('company/delete/<int:company_id>/', company_delete, name='company_delete'),
+    path('company/detail/<int:company_id>/', company_detail, name='company_detail'),
 ]
