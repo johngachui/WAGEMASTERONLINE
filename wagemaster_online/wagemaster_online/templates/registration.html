@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration</title>
+</head>
+<body>
+    <h2>Registration</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ user_form.as_p }}
+        <label for="id_company_name">Company Name:</label>
+        <input type="text" id="id_company_name" name="company_name">
+        <label for="id_tel">Telephone:</label>
+        <input type="text" id="id_tel" name="tel">
+        <label for="id_contact_person">Contact Person:</label>
+        <input type="text" id="id_contact_person" name="contact_person">
+        <button type="submit">Register</button>
+        <a href="/" class="cancel-btn">Cancel</a>
+    </form>
+</body>
+</html>
+

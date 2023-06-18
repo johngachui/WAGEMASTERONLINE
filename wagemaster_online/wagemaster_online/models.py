@@ -1,5 +1,23 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
+class User(AbstractUser):
+    is_administrator = models.BooleanField(default=False)
+
+    # Add any additional fields or methods as needed
+
+    def is_admin(self):
+        return self.is_administrator
+
+class Client(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='client')
+    ClientIdentity = models.AutoField(primary_key=True)
+    company_name = models.CharField(max_length=255)
+    tel = models.CharField(max_length=20)
+    contact_person = models.CharField(max_length=255)
+    class Meta:
+        db_table = 'client'
+        
 class Company(models.Model):
     CompanyIdentity = models.AutoField(primary_key=True, db_column='CompanyIdentity', 
                                        auto_created=True, blank=False, null=False)
@@ -7,6 +25,7 @@ class Company(models.Model):
     CompanyEmail = models.TextField()
     CompanyTel = models.TextField()
     CompanyContactPerson = models.TextField()
+    ClientIdentity = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='company')
     class Meta:
         db_table = 'company'
 
@@ -107,4 +126,6 @@ class LeaveApplication(models.Model):
     StopDate = models.DateField()
     class Meta:
         db_table = 'leaveapplication'
+
+
 
