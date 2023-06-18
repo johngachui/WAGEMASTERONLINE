@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Wagemaster Online</title>
+</head>
+<body>
+    <header>
+        <!-- Header content -->
+        <h1>Wagemaster Online</h1>
+        <nav>
+            <ul>
+                <li><a href="{% url 'company_create' %}">Home</a></li>
+                <li><a href="{% url 'company_list' %}">Companies</a></li>
+                <!-- Add more navigation links as needed -->
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Content from child templates will be inserted here -->
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <!-- Footer content -->
+        <p>&copy; 2023 Wagemaster Online. All rights reserved.</p>
+    </footer>
+</body>
+</html>

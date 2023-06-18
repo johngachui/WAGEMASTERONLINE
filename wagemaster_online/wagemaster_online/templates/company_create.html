@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Create Company</h2>
+    <a href="{% url 'company_list' %}" class="btn btn-danger btn-sm">Back</a>
+  </div>
+  <form method="post" action="{% url 'company_create' %}">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="CompanyName">Company name:</label>
+      <input type="text" class="form-control form-control-sm" id="CompanyName" name="CompanyName" required>
+    </div>
+    <div class="form-group">
+      <label for="CompanyEmail">Email:</label>
+      <input type="email" class="form-control form-control-sm" id="CompanyEmail" name="CompanyEmail" required>
+    </div>
+    <div class="form-group mb-2">
+      <label for="CompanyTel">Phone:</label>
+      <input type="tel" class="form-control form-control-sm" id="CompanyTel" name="CompanyTel" required>
+    </div>
+    <div class="form-group mb-2">
+        <label for="CompanyContactPerson">Contact person:</label>
+        <input type="text" class="form-control form-control-sm" id="CompanyContactPerson" name="CompanyContactPerson" required>
+      </div>
+    <button type="submit" class="btn btn-primary btn-sm">Create</button>
+  </form>
+{% endblock %}

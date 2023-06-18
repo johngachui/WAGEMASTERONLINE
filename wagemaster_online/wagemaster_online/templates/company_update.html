@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Update company</h2>
+    <a href="{% url 'company_list' %}" class="btn btn-danger btn-sm">Back</a>
+  </div>
+  <form method="post" action="{% url 'company_update' company.CompanyIdentity %}">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="CompanyName">Name:</label>
+      <input type="text" class="form-control form-control-sm" id="CompanyName" name="CompanyName" value="{{ company.CompanyName }}" required>
+    </div>
+    <div class="form-group">
+      <label for="CompanyEmail">Email:</label>
+      <input type="email" class="form-control form-control-sm" id="CompanyEmail" name="CompanyEmail" value="{{ company.CompanyEmail }}" required>
+    </div>
+    <div class="form-group">
+      <label for="CompanyTel">Phone:</label>
+      <input type="tel" class="form-control form-control-sm" id="CompanyTel" name="CompanyTel" value="{{ company.CompanyTel }}" required>
+    </div>
+    <div class="form-group">
+        <label for="CompanyContactPerson">Phone:</label>
+        <input type="Text" class="form-control form-control-sm" id="CompanyContactPerson" name="CompanyContactPerson" value="{{ company.CompanyContactPerson }}" required>
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm">Update</button>
+  </form>
+{% endblock %}
