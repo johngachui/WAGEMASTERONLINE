@@ -28,8 +28,21 @@ ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'wagemaster_online.User'
 
-# Application definition
+AUTHENTICATION_BACKENDS = [
+    'wagemaster_online.authentication.CustomAuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'mail.webhostingservices.co.ke'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'info@digitalframeworksltd.com'
+EMAIL_HOST_PASSWORD = 'John.1967'
+EMAIL_USE_SSL = True
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -46,8 +59,10 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'wagemaster_online.urls'
@@ -67,6 +82,8 @@ TEMPLATES = [
         },
     },
 ]
+
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
 WSGI_APPLICATION = 'wagemaster_online.wsgi.application'
 
@@ -148,3 +165,10 @@ LOGGING = {
         },
     },
 }
+
+#PASSWORD_HASHERS = [
+#    'django.contrib.auth.hashers.Argon2PasswordHasher',
+#    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+#    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+#    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+#]

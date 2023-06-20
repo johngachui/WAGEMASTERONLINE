@@ -13,6 +13,7 @@ class Client(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='client')
     ClientIdentity = models.AutoField(primary_key=True)
     company_name = models.CharField(max_length=255)
+    company_email = models.CharField(max_length=255, null=True)
     tel = models.CharField(max_length=20)
     contact_person = models.CharField(max_length=255)
     class Meta:

@@ -2,23 +2,26 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Company , Subscription, Division, Employee, LeaveBalance, ProcessedLeave, LeaveApplication
 from django.db import IntegrityError
 import logging
-from .models import User, Client
-from django.contrib.auth.forms import UserCreationForm
+from .models import User, Client, Company, Subscription
+from django.contrib.auth.forms import UserCreationForm, UserCreationForm
+from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.contrib.auth.views import LoginView
+from .forms import CustomUserCreationForm, ClientForm
+from django.contrib import messages
+from django.core.mail import send_mail
+from django.contrib.auth.models import User
+
+User = get_user_model()
+
+from django.contrib import messages
 
 def home(request):
     return render(request, 'home.html')
 
-from django.core.mail import send_mail
-from django.contrib.auth.models import User
-from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm
-from .models import Client
-
 def register(request):
     if request.method == 'POST':
-        user_form = UserCreationForm(request.POST)
+        user_form = CustomUserCreationForm(request.POST)
         if user_form.is_valid():
             user = user_form.save(commit=False)
 
@@ -26,24 +29,27 @@ def register(request):
             client = Client(
                 user=user,
                 company_name=request.POST['company_name'],
+                company_email=request.POST['company_email'],
                 tel=request.POST['tel'],
                 contact_person=request.POST['contact_person']
             )
 
             # Send email to administrator
-            administrator_email = 'admin@example.com'  # Replace with actual administrator email
+            administrator_email = 'admin@digitalframeworksltd.com'  # Replace with actual administrator email
             message = f"A new user has registered:\n\n" \
                       f"Company Name: {client.company_name}\n" \
+                      f"Company Email: {client.company_email}\n" \
                       f"Telephone: {client.tel}\n" \
                       f"Contact Person: {client.contact_person}\n"
             send_mail(
                 'New User Registration',
                 message,
-                'admin@example.com',
+                'admin@digitalframeworksltd.com',
                 [administrator_email],
-                fail_silently=True,
+                fail_silently=False,
             )
 
+            messages.success(request, 'Registration successful. An email has been sent to the administrator.')
             return redirect('home')
     else:
         user_form = UserCreationForm()
@@ -52,6 +58,23 @@ def register(request):
 
 class UserLoginView(LoginView):
     template_name = 'login.html'
+
+    def get_success_url(self):
+        user = self.request.user
+        if user.is_authenticated and user.is_administrator:
+            return '/admin/dashboard/'  # Redirect to the administrator dashboard
+        else:
+            return '/client/dashboard/'  # Redirect to the client dashboard
+
+def administrator_dashboard(request):
+    clients = Client.objects.all()
+    form = ClientForm()
+    return render(request, 'administrator_dashboard.html', {'clients': clients, 'form': form})
+
+
+def client_list(request):
+    clients = Client.objects.all()
+    return render(request, 'client_list.html', {'clients': clients})
 
 def user_list(request):
     users = User.objects.all()
@@ -96,13 +119,7 @@ def company_delete(request, company_id):
         company.delete()
         return redirect('company_list')
     return render(request, 'company_delete.html', {'company': company})
-from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
-from django.core.mail import send_mail
-from django.contrib import messages
-
-from .models import Client, Company, Subscription
-
+    
 def administrator_dashboard(request):
     # Retrieve all clients, companies, and subscription records
     clients = Client.objects.all()
@@ -143,6 +160,22 @@ def send_one_time_password_email(client_email, one_time_password):
     from_email = 'your-email@example.com'  # Replace with your email address
     to_email = client_email
     send_mail(subject, message, from_email, [to_email])
+
+def client_dashboard(request):
+    user = request.user
+    client = user.client  # Get the client associated with the user
+
+    # Retrieve the client's companies and subscriptions
+    companies = Company.objects.filter(ClientIdentity=client)
+    subscriptions = Subscription.objects.filter(CompanyIdentity__ClientIdentity=client)
+
+    context = {
+        'client': client,
+        'companies': companies,
+        'subscriptions': subscriptions
+    }
+
+    return render(request, 'client_dashboard.html', context)
 
 def subscription_detail(request, subscription_id):
     subscription = Subscription.objects.get(SubscriptionIdentity=subscription_id)
