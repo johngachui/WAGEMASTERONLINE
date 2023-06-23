@@ -2,31 +2,44 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+     
+    <style>
+        .i-am-centered {
+            margin: auto;
+            max-width: 60%;
+            padding-top: 2%;
+        }
+    </style>
     <title>Wagemaster Leave</title>
 </head>
 <body>
-    <header>
-        <!-- Header content -->
-        <h1>Wagemaster Leave</h1>
-        <nav>
-            <ul>
-                <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="{% url 'login' %}">Login</a></li>
-                <li><a href="{% url 'register' %}">Register</a></li>
-                <!-- Add more navigation links as needed -->
-            </ul>
-        </nav>
-    </header>
+    <div class="i-am-centered">
+        <header>
+            <!-- Header content -->
+            <h2>Wagemaster Leave</h2>
+            <nav>
+                <ul>
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li><a href="{% url 'login' %}">Login</a></li>
+                    <li><a href="{% url 'register' %}">Register</a></li>
+                    <!-- Add more navigation links as needed -->
+                </ul>
+            </nav>
+        </header>
 
-    <main>
-        <!-- Content from child templates will be inserted here -->
-        {% block content %}
-        {% endblock %}
-    </main>
+        <main>
+            <!-- Content from child templates will be inserted here -->
+            {% block content %}
+            {% endblock %}
+        </main>
 
-    <footer>
-        <!-- Footer content -->
-        <p>&copy; 2023 Wagemaster Online. All rights reserved.</p>
-    </footer>
+        <footer>
+            <!-- Footer content 
+            <p>&copy; 2023 Wagemaster Online. All rights reserved.</p>-->
+        </footer>
+    </div>  
+    {% include 'bootstrap5_forms.html' %}
 </body>
 </html>

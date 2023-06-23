@@ -3,26 +3,64 @@
 {% block content %}
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Create Company</h2>
-    <a href="{% url 'company_list' %}" class="btn btn-danger btn-sm">Back</a>
   </div>
-  <form method="post" action="{% url 'company_create' %}">
+  <form method="post" action="{% url 'company_create' %}?selected_client={{ selected_client_id }}">
     {% csrf_token %}
-    <div class="form-group">
-      <label for="CompanyName">Company name:</label>
-      <input type="text" class="form-control form-control-sm" id="CompanyName" name="CompanyName" required>
-    </div>
-    <div class="form-group">
-      <label for="CompanyEmail">Email:</label>
-      <input type="email" class="form-control form-control-sm" id="CompanyEmail" name="CompanyEmail" required>
-    </div>
-    <div class="form-group mb-2">
-      <label for="CompanyTel">Phone:</label>
-      <input type="tel" class="form-control form-control-sm" id="CompanyTel" name="CompanyTel" required>
-    </div>
-    <div class="form-group mb-2">
-        <label for="CompanyContactPerson">Contact person:</label>
-        <input type="text" class="form-control form-control-sm" id="CompanyContactPerson" name="CompanyContactPerson" required>
+    <input type="hidden" name="selected_client" value="{{ selected_client_id }}">
+    <!-- ClientIdentity combobox -->
+    <div class="form-group row">
+      <label for="id_ClientIdentity" class="col-sm-3 col-form-label">
+        Client:
+      </label>
+      <div class="col-sm-7">
+        <select class="form-control" id="id_ClientIdentity" name="{{ form.ClientIdentity.name }}" disabled>
+          <option value="{{ client.ClientIdentity }}" selected>
+            {{ client.ClientName }}
+          </option>
+        </select>
       </div>
-    <button type="submit" class="btn btn-primary btn-sm">Create</button>
+    </div>
+    <!-- CompanyName -->
+    <div class="form-group row">
+      <label for="id_CompanyName" class="col-sm-3 col-form-label">
+        Company name:
+      </label>
+      <div class="col-sm-7">
+        <input type="text" class="form-control" placeholder="Required" id="id_CompanyName" name="{{ form.CompanyName.name }}" style="height: 40px;">
+      </div>
+    </div>
+    <!-- CompanyEmail -->
+    <div class="form-group row">
+      <label for="id_CompanyEmail" class="col-sm-3 col-form-label">
+        Email:
+      </label>
+      <div class="col-sm-7">
+        <input type="text" class="form-control" placeholder="Required" id="id_CompanyEmail" name="{{ form.CompanyEmail.name }}" style="height: 40px;">
+      </div>
+    </div>
+    <!-- CompanyContactPerson -->
+    <div class="form-group row">
+      <label for="id_CompanyContactPerson" class="col-sm-3 col-form-label">
+        Contact Person:
+      </label>
+      <div class="col-sm-7">
+        <input type="text" class="form-control" placeholder="Required" id="id_CompanyContactPerson" name="{{ form.CompanyContactPerson.name }}" style="height: 40px;">
+      </div>
+    </div>
+    <!-- CompanyTel -->
+    <div class="form-group row">
+      <label for="id_CompanyTel" class="col-sm-3 col-form-label">
+        Tel:
+      </label>
+      <div class="col-sm-7">
+        <input type="text" class="form-control" placeholder="Required" id="id_CompanyTel" name="{{ form.CompanyTel.name }}" style="height: 40px;">
+      </div>
+    </div>
+    <div class="form-group row">
+      <div class="col-sm-10 offset-sm-2" style="margin-top: 20px;">
+        <a href="{% url 'administrator_dashboard' %}" class="btn btn-danger btn-sm">Back</a>
+        <button type="submit" class="btn btn-primary btn-sm">Create</button>
+      </div>
+    </div>
   </form>
 {% endblock %}

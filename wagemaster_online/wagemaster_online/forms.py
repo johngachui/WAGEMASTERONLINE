@@ -1,25 +1,31 @@
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
+from .models import User, Client, Company
+from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
 from django.shortcuts import render, redirect
-from .models import User, Client
+from django.contrib import messages
+from django.shortcuts import get_object_or_404
+
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User
 
 class ClientForm(forms.ModelForm):
+    username = forms.CharField(label='Username')  # Add username field
+
     class Meta:
         model = Client
-        fields = ['company_name', 'company_email', 'tel', 'contact_person']
+        fields = ['username', 'ClientName', 'ClientEmail', 'ClientTel', 'ClientContactPerson']
 
-def create_client(request):
-    if request.method == 'POST':
-        form = ClientForm(request.POST)
-        if form.is_valid():
-            client = form.save(commit=False)
-            client.user = request.user  # Associate the client with the current user
-            client.save()
-            return redirect('administrator_dashboard')
-    else:
-        form = ClientForm()
-    return render(request, 'create_client.html', {'form': form})
+class CompanyForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['ClientIdentity'].disabled = True
+
+    class Meta:
+        model = Company
+        fields = ['CompanyName', 'CompanyEmail', 'CompanyTel', 'CompanyContactPerson', 'ClientIdentity']
+        widgets = {'ClientIdentity': forms.HiddenInput()}
+

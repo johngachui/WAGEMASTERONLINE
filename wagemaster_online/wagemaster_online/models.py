@@ -10,12 +10,12 @@ class User(AbstractUser):
         return self.is_administrator
 
 class Client(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='client')
     ClientIdentity = models.AutoField(primary_key=True)
-    company_name = models.CharField(max_length=255)
-    company_email = models.CharField(max_length=255, null=True)
-    tel = models.CharField(max_length=20)
-    contact_person = models.CharField(max_length=255)
+    ClientName = models.CharField(max_length=255)
+    ClientEmail = models.CharField(max_length=255, null=True)
+    ClientTel = models.CharField(max_length=20)
+    ClientContactPerson = models.CharField(max_length=255)
+    ClientUserID = models.BigIntegerField(null=False)
     class Meta:
         db_table = 'client'
         
@@ -26,7 +26,8 @@ class Company(models.Model):
     CompanyEmail = models.TextField()
     CompanyTel = models.TextField()
     CompanyContactPerson = models.TextField()
-    ClientIdentity = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='company')
+    ClientIdentity = models.ForeignKey(Client, on_delete=models.CASCADE,
+                                       related_name='company', db_column='ClientIdentity')
     class Meta:
         db_table = 'company'
 

@@ -41,7 +41,6 @@ EMAIL_HOST_PASSWORD = 'John.1967'
 EMAIL_USE_SSL = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -51,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'wagemaster_online',
+    'bootstrap5',
 ]
 
 MIDDLEWARE = [

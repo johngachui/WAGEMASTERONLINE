@@ -3,44 +3,40 @@ from .models import Company , Subscription, Division, Employee, LeaveBalance, Pr
 from django.db import IntegrityError
 import logging
 from .models import User, Client, Company, Subscription
-from django.contrib.auth.forms import UserCreationForm, UserCreationForm
 from django.contrib.auth import get_user_model
-from django.core.mail import send_mail
+from django.core.mail import send_mail, BadHeaderError
 from django.contrib.auth.views import LoginView
-from .forms import CustomUserCreationForm, ClientForm
-from django.contrib import messages
+from .forms import ClientForm, CompanyForm
 from django.core.mail import send_mail
 from django.contrib.auth.models import User
+from django.utils.crypto import get_random_string
+from django.contrib import messages
+import pdb
 
 User = get_user_model()
-
-from django.contrib import messages
+logger = logging.getLogger(__name__)
 
 def home(request):
     return render(request, 'home.html')
 
 def register(request):
     if request.method == 'POST':
-        user_form = CustomUserCreationForm(request.POST)
-        if user_form.is_valid():
-            user = user_form.save(commit=False)
+        username = request.POST['User']
+        company_name = request.POST['ClientName']
+        company_email = request.POST['ClientEmail']
+        tel = request.POST['ClientTel']
+        contact_person = request.POST['ClientContactPerson']
 
-            # Create a client object with the details
-            client = Client(
-                user=user,
-                company_name=request.POST['company_name'],
-                company_email=request.POST['company_email'],
-                tel=request.POST['tel'],
-                contact_person=request.POST['contact_person']
-            )
-
-            # Send email to administrator
-            administrator_email = 'admin@digitalframeworksltd.com'  # Replace with actual administrator email
-            message = f"A new user has registered:\n\n" \
-                      f"Company Name: {client.company_name}\n" \
-                      f"Company Email: {client.company_email}\n" \
-                      f"Telephone: {client.tel}\n" \
-                      f"Contact Person: {client.contact_person}\n"
+        # Send email to administrator
+        administrator_email = 'admin@digitalframeworksltd.com'  # Replace with actual administrator email
+        message = f"A new registration for online leave has been submitted:\n\n" \
+                  f"Company Name: {company_name}\n" \
+                  f"Username: {username}\n" \
+                  f"Company Email: {company_email}\n" \
+                  f"Telephone: {tel}\n" \
+                  f"Contact Person: {contact_person}\n"
+        
+        try:
             send_mail(
                 'New User Registration',
                 message,
@@ -48,13 +44,66 @@ def register(request):
                 [administrator_email],
                 fail_silently=False,
             )
+            messages.success(request, 'Registration successful. An email has been sent to the administrator for verification.')
+        except BadHeaderError:
+            messages.error(request, 'Failed to send registration email. Please try again later.')
 
-            messages.success(request, 'Registration successful. An email has been sent to the administrator.')
-            return redirect('home')
+        return redirect('home')
+
+    return render(request, 'registration.html')
+
+def create_client(request):
+    #pdb.set_trace()
+    if request.method == 'POST':
+        form = ClientForm(request.POST)
+        if form.is_valid():
+            client = form.save(commit=False)
+            username = form.cleaned_data['username']  # Get the entered username
+            
+            try:
+                # Check if a user with the same username already exists
+                existing_user = User.objects.filter(username=username).exists()
+                if existing_user:
+                    messages.error(request, 'Username already exists. Please choose a different username.')
+                    return redirect('administrator_dashboard')
+
+                # Create a new user with the entered username
+                user = User.objects.create_user(username=username)
+                client.ClientUserID = user.id
+                logger.debug(f"Username: {username}")
+                logger.debug(f"User ID: {user.id}")
+                logger.debug(f"Client: {client}")
+                # Create a user profile with a one-time password
+                one_time_password = generate_one_time_password()
+                user.set_password(one_time_password)
+                user.is_administrator = False
+                
+
+                try:
+                    user.save()
+                    logger.debug("User saved successfully")
+                except Exception as e:
+                    logger.exception(f"Error saving user: {e}")
+                
+                try:
+                    client.save()
+                    logger.debug("Client saved successfully")
+                except Exception as e:
+                    logger.exception(f"Error saving client: {e}")
+
+                # Send the user details via email
+                send_one_time_password_email(client.ClientEmail, one_time_password)
+
+                return redirect('administrator_dashboard')
+            except User.DoesNotExist:
+                # Handle the case when the user does not exist
+                messages.error(request, 'Invalid username. Please try again.')
+                return redirect('administrator_dashboard')
     else:
-        user_form = UserCreationForm()
+        print(form.errors)  # Print form errors to the console for debugging purposes
 
-    return render(request, 'registration.html', {'user_form': user_form})
+        form = ClientForm()
+    return render(request, 'create_client.html', {'form': form})
 
 class UserLoginView(LoginView):
     template_name = 'login.html'
@@ -66,11 +115,10 @@ class UserLoginView(LoginView):
         else:
             return '/client/dashboard/'  # Redirect to the client dashboard
 
-def administrator_dashboard(request):
-    clients = Client.objects.all()
-    form = ClientForm()
-    return render(request, 'administrator_dashboard.html', {'clients': clients, 'form': form})
-
+#def administrator_dashboard(request):
+#    clients = Client.objects.all()
+#    form = ClientForm()
+#    return render(request, 'administrator_dashboard.html', {'clients': clients, 'form': form})
 
 def client_list(request):
     clients = Client.objects.all()
@@ -89,17 +137,22 @@ def company_list(request):
     return render(request, 'company_list.html', {'companies': companies})
 
 def company_create(request):
-     if request.method == 'POST':
-        try:
-            companies = Company(CompanyName=request.POST.get('CompanyName'), 
-                                CompanyEmail=request.POST.get('CompanyEmail'), 
-                                CompanyTel=request.POST.get('CompanyTel'), 
-                                CompanyContactPerson=request.POST.get('CompanyContactPerson'))
-            companies.save()
-            return redirect('company_list')
-        except IntegrityError as e:
-            logging.error(str(e))
-     return render(request, 'company_create.html')
+    selected_client_id = request.GET.get('selected_client')
+    print("Selected Client ID:", selected_client_id)
+    clients = Client.objects.all()
+    for client in clients:
+        print(client.ClientIdentity)
+    client = get_object_or_404(Client, ClientIdentity=selected_client_id)
+    
+    if request.method == 'POST':
+        form = CompanyForm(request.POST, initial={'ClientIdentity': client})
+        if form.is_valid():
+            form.save()
+            return redirect('administrator_dashboard')
+    else:
+        form = CompanyForm(initial={'ClientIdentity': client})
+    
+    return render(request, 'company_create.html', {'form': form, 'selected_client_id': selected_client_id, 'client': client})
 
 
 def company_update(request, company_id):
@@ -120,44 +173,41 @@ def company_delete(request, company_id):
         return redirect('company_list')
     return render(request, 'company_delete.html', {'company': company})
     
+"""def administrator_dashboard(request):
+    selected_client_id = request.GET.get('selected_client')
+    clients = Client.objects.all()
+    form = ClientForm()
+    context = {'clients': clients, 'form': form, 'selected_client_id': selected_client_id}
+    return render(request, 'administrator_dashboard.html', context)"""
+
 def administrator_dashboard(request):
-    # Retrieve all clients, companies, and subscription records
+    selected_client_id = request.GET.get('selected_client')
+
     clients = Client.objects.all()
     companies = Company.objects.all()
-    subscriptions = Subscription.objects.all()
 
-    if request.method == 'POST':
-        # Create a new client
-        client_email = request.POST['client_email']
-        client = Client.objects.create(client_email=client_email)
-        # Generate a one-time password
-        one_time_password = generate_one_time_password()
-        # Create a user with the client email as username and one-time password
-        user = User.objects.create_user(username=client_email, password=one_time_password)
-        # Link the user to the client record
-        client.user = user
-        client.save()
-        # Send the one-time password to the client's email
-        send_one_time_password_email(client_email, one_time_password)
-        messages.success(request, 'Client created successfully. One-time password has been sent to the client\'s email.')
-        return redirect('administrator_dashboard')
+    client_form = ClientForm()
+    company_form = CompanyForm()
+    #subscription_form = SubscriptionForm()
 
     context = {
-        'clients': clients,
         'companies': companies,
-        'subscriptions': subscriptions,
+        'clients': clients,
+        'client_form': client_form,
+        'company_form': company_form,
+        #'subscription_form': subscription_form,
+        'selected_client_id': selected_client_id
     }
     return render(request, 'administrator_dashboard.html', context)
 
+
 def generate_one_time_password():
-    # Implement your logic to generate a one-time password
-    # For example, you can use random number generation or any other method you prefer
-    return '12345'
+    return get_random_string(length=5, allowed_chars='1234567890')
 
 def send_one_time_password_email(client_email, one_time_password):
     subject = 'Your One-Time Password'
     message = f'Your one-time password is: {one_time_password}'
-    from_email = 'your-email@example.com'  # Replace with your email address
+    from_email = 'admin@digitalframeworksltd.com'  # Replace with your email address
     to_email = client_email
     send_mail(subject, message, from_email, [to_email])
 

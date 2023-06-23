@@ -1,15 +1,63 @@
-<!-- create_client.html -->
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Create Client</title>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Create Client</h2>
+  </div>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Create</button>
+        
+        <!-- ClientName -->
+        <div class="form-group row">
+            <label for="id_ClientName" class="col-sm-3 col-form-label">
+                Client Name:
+            </label>
+            <div class="col-sm-7">
+            <input type="text" class="form-control" placeholder="Required" id="id_ClientName" name="{{ form.ClientName.name }}" style="height: 40px;">
+            </div>
+        </div>
+
+        <!-- Username -->
+        <div class="form-group row">
+            <label for="id_Username" class="col-sm-3 col-form-label">
+                Username:
+            </label>
+            <div class="col-sm-7">
+            <input type="text" class="form-control" placeholder="Required" id="id_Username" name="{{ form.username.name }}" style="height: 40px;">
+            </div>
+        </div>
+
+        <!-- ClientEmail -->
+        <div class="form-group row">
+            <label for="id_ClientEmail" class="col-sm-3 col-form-label">
+                Client Email:
+            </label>
+            <div class="col-sm-7">
+            <input type="text" class="form-control" placeholder="Required" id="id_ClientEmail" name="{{ form.ClientEmail.name }}" style="height: 40px;">
+            </div>
+        </div>
+
+        <!-- ClientTel -->
+        <div class="form-group row">
+            <label for="id_ClientTel" class="col-sm-3 col-form-label">
+                Tel:
+            </label>
+            <div class="col-sm-7">
+            <input type="text" class="form-control" placeholder="Required" id="id_ClientTel" name="{{ form.ClientTel.name }}" style="height: 40px;">
+            </div>
+        </div>
+
+        <!-- ClientContactPerson -->
+        <div class="form-group row">
+            <label for="id_ClientContactPerson" class="col-sm-3 col-form-label">
+                Contact Person:
+            </label>
+            <div class="col-sm-7">
+            <input type="text" class="form-control" placeholder="Required" id="id_ClientContactPerson" name="{{ form.ClientContactPerson.name }}" style="height: 40px;">
+            </div>
+        </div>
+        
+        <a href="{% url 'administrator_dashboard' %}" class="btn btn-danger btn-sm">Back</a>
+        <button type="submit" class="btn btn-primary btn-sm">Create</button>
     </form>
-</body>
-</html>
+{% endblock %}

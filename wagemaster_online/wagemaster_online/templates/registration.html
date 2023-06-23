@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html>
 <head>
     <title>Registration</title>
@@ -8,31 +7,30 @@
     <h2>Registration</h2>
     <form method="post">
         {% csrf_token %}
-        {{ user_form.as_p }}
+        <div class="form-group">
+            <label for="id_username">Username:</label>
+            <input type="text" id="id_username" name="User" required>
+        </div>
         <div class="form-group">
             <label for="id_company_name">Company Name:</label>
-            <input type="text" id="id_company_name" name="company_name">
+            <input type="text" id="id_company_name" name="ClientName" required>
         </div>  
         <div class="form-group">    
             <label for="id_company_email">Company Email:</label>
-            <input type="text" id="id_company_email" name="company_email">
+            <input type="email" id="id_company_email" name="ClientEmail" required>
         </div>  
         <div class="form-group">
             <label for="id_tel">Telephone:</label>
-            <input type="text" id="id_tel" name="tel">
+            <input type="text" id="id_tel" name="ClientTel" required>
         </div>      
         <div class="form-group">    
             <label for="id_contact_person">Contact Person:</label>
-            <input type="text" id="id_contact_person" name="contact_person">
+            <input type="text" id="id_contact_person" name="ClientContactPerson" required>
         </div>  
         <div class="form-group">
             <button type="submit">Register</button>
             <a href="/" class="cancel-btn">Cancel</a>
         </div>  
-        <div class="form-group">
-           
-        </div>
     </form>
 </body>
 </html>
-

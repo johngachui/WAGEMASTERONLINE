@@ -16,9 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from wagemaster_online.views import company_detail, company_list, company_create, company_update, company_delete
+from wagemaster_online.views import company_detail, company_list, company_create, company_update, company_delete,create_client
 from wagemaster_online.views import UserLoginView, register, home,administrator_dashboard, client_dashboard,client_list
-from wagemaster_online.forms import create_client
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
