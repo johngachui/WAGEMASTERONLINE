@@ -6,12 +6,13 @@ from .models import User, Client, Company, Subscription
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail, BadHeaderError
 from django.contrib.auth.views import LoginView
-from .forms import ClientForm, CompanyForm
+from .forms import ClientForm, CompanyForm, SubscriptionForm
 from django.core.mail import send_mail
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from django.contrib import messages
 import pdb
+from django.http import JsonResponse
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -115,11 +116,6 @@ class UserLoginView(LoginView):
         else:
             return '/client/dashboard/'  # Redirect to the client dashboard
 
-#def administrator_dashboard(request):
-#    clients = Client.objects.all()
-#    form = ClientForm()
-#    return render(request, 'administrator_dashboard.html', {'clients': clients, 'form': form})
-
 def client_list(request):
     clients = Client.objects.all()
     return render(request, 'client_list.html', {'clients': clients})
@@ -154,6 +150,23 @@ def company_create(request):
     
     return render(request, 'company_create.html', {'form': form, 'selected_client_id': selected_client_id, 'client': client})
 
+def subscription_create(request):
+    #pdb.set_trace()
+    selected_company_id = request.GET.get('selected_company')
+    company = get_object_or_404(Company, CompanyIdentity=selected_company_id)
+    
+    if request.method == 'POST':
+        form = SubscriptionForm(request.POST, initial={'CompanyIdentity': company})
+        if form.is_valid():
+            form.save()
+            return redirect('administrator_dashboard')
+        else:
+            print(form.errors)
+    else:
+
+        form = SubscriptionForm(initial={'CompanyIdentity': company})
+        
+    return render(request, 'subscription_create.html', {'form': form, 'selected_company_id': selected_company_id, 'company': company})
 
 def company_update(request, company_id):
     company = get_object_or_404(Company, CompanyIdentity=company_id)
@@ -173,33 +186,55 @@ def company_delete(request, company_id):
         return redirect('company_list')
     return render(request, 'company_delete.html', {'company': company})
     
-"""def administrator_dashboard(request):
-    selected_client_id = request.GET.get('selected_client')
-    clients = Client.objects.all()
-    form = ClientForm()
-    context = {'clients': clients, 'form': form, 'selected_client_id': selected_client_id}
-    return render(request, 'administrator_dashboard.html', context)"""
-
 def administrator_dashboard(request):
     selected_client_id = request.GET.get('selected_client')
+    selected_company_id = request.GET.get('selected_company')
 
     clients = Client.objects.all()
     companies = Company.objects.all()
+    subscriptions = Subscription.objects.all()
+    divisions = Division.objects.all()
+    employees = Employee.objects.all()
 
     client_form = ClientForm()
     company_form = CompanyForm()
-    #subscription_form = SubscriptionForm()
+    subscription_form = SubscriptionForm()
 
     context = {
         'companies': companies,
         'clients': clients,
+        'subscriptions': subscriptions,
+        'divisions': divisions,
+        'employees': employees,
+
         'client_form': client_form,
         'company_form': company_form,
-        #'subscription_form': subscription_form,
-        'selected_client_id': selected_client_id
+        'subscription_form': subscription_form,
+        
+        'selected_client_id': selected_client_id,
+        'selected_company_id': selected_company_id
     }
     return render(request, 'administrator_dashboard.html', context)
 
+def dashboard(request):
+    clients = Client.objects.all()
+    initial_client_id = clients.first().ClientIdentity if clients else None
+    return render(request, 'dashboard.html', {'clients': clients, 'initial_client_id': initial_client_id})
+
+
+def fetch_companies(request):
+    selected_client_id = request.GET.get('selected_client_id')
+    print("Selected Client ID:", selected_client_id)
+    companies = Company.objects.filter(ClientIdentity=selected_client_id)
+    company_data = [{'name': company.CompanyName, 'id': company.CompanyIdentity} for company in companies]
+    return JsonResponse(company_data, safe=False)
+
+def fetch_subscriptions(request):
+    selected_company_id = request.GET.get('selected_company_id')
+    print("Selected Company ID:", selected_company_id)
+    subscriptions = Subscription.objects.filter(CompanyIdentity=selected_company_id)
+    subscription_data = [{'startdate': subscription.SubscriptionStartDate, 'stopdate': subscription.SubscriptionEndDate, 'isactive': subscription.SubscriptionActive, 'id': subscription.SubscriptionID } for subscription in subscriptions]
+    return JsonResponse(subscription_data, safe=False)
 
 def generate_one_time_password():
     return get_random_string(length=5, allowed_chars='1234567890')

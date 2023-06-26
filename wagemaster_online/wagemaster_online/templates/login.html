@@ -3,11 +3,14 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div style = "position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
   <h2>Login</h2>
-  <form method="post">
+  <form method="post" style="margin-top: 30px; margin-bottom: 15px;">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit" class="btn btn-success">Login</button>
+    <p><a href="{% url 'password_reset' %}" class="btn btn-link">Forgot Password?</a></p>
   </form>
-  <p><a href="{% url 'password_reset' %}" class="btn btn-link">Forgot Password?</a></p>
+  
+</div>  
 {% endblock %}

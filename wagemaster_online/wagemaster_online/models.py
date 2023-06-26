@@ -34,14 +34,15 @@ class Company(models.Model):
 class Subscription(models.Model):
     SubscriptionID =  models.AutoField(primary_key=True, db_column='SubscriptionID', 
                                        auto_created=True, blank=False, null=False)
-    CompanyIdentity = models.ForeignKey(
-        Company,
-        on_delete=models.CASCADE,
-        to_field='CompanyIdentity'
-    )
-    SubscriptionKey = models.TextField()
+    
+    CompanyIdentity = models.ForeignKey(Company, on_delete=models.CASCADE,
+                                       related_name='subscription', db_column='CompanyIdentity')
+    SubscriptionKey = models.TextField(blank=True, null=True)
     SubscriptionStartDate = models.DateField()
     SubscriptionEndDate = models.DateField()
+    SubscriptionDatePaid = models.DateField(blank=True,null=True)
+    SubscriptionActive = models.BooleanField(default=False, blank=True, null=True)
+    Maximum_Employees = models.IntegerField(blank=True,null=True,default=10)
     class Meta:
         db_table = 'subscription'
 

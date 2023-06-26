@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>New Subscription</h2>
+  </div>
+  <form method="post" action="{% url 'subscription_create' %}?selected_company={{ selected_company_id }}">
+    {% csrf_token %}
+    <input type="hidden" name="selected_company" value="{{ selected_company_id }}">
+    <!-- CompanyIdentity combobox -->
+    <div class="form-group row">
+      <label for="id_CompanyIdentity" class="col-sm-3 col-form-label">
+        Company:
+      </label>
+      <div class="col-sm-7">
+        <select class="form-control" id="id_CompanyIdentity" name="{{ form.CompanyIdentity.name }}" disabled>
+          <option value="{{ company.CompanyIdentity }}" selected>
+            {{ company.CompanyName }}
+          </option>
+        </select>
+      </div>
+    </div>
+    <!-- SubscriptionStartDate -->
+    <div class="form-group row">
+      <label for="id_SubscriptionStartDate" class="col-sm-3 col-form-label">
+        Subscription Start Date:
+      </label>
+      <div class="col-sm-7">
+        <input type="date" class="form-control" placeholder="Required" id="id_SubscriptionStartDate" name="{{ form.SubscriptionStartDate.name }}" style="height: 40px;">
+      </div>
+    </div>
+    <!-- SubscriptionEndDate -->
+    <div class="form-group row">
+      <label for="id_SubscriptionEndDate" class="col-sm-3 col-form-label">
+        Subscription End Date:
+      </label>
+      <div class="col-sm-7">
+        <input type="date" class="form-control" placeholder="Required" id="id_SubscriptionEndDate" name="{{ form.SubscriptionEndDate.name }}" style="height: 40px;">
+      </div>
+    </div>
+    <!-- SubscriptionActive -->
+    <div class="form-group row">
+      <label for="id_SubscriptionActive" class="col-sm-3 col-form-label">
+        Subscription Active:
+      </label>
+      <div class="col-sm-7">
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="id_SubscriptionActive" value="True" name="{{ form.SubscriptionActive.name }}" style="margin-top: 10px;">
+      </div>  
+      </div>
+    </div>
+    <!-- SubscriptionDatePaid -->
+    <div class="form-group row">
+      <label for="id_SubscriptionDatePaid" class="col-sm-3 col-form-label">
+        Date Paid:
+      </label>
+      <div class="col-sm-7">
+        <input type="date" class="form-control" placeholder="Required" id="id_SubscriptionDatePaid" name="{{ form.SubscriptionDatePaid.name }}" style="height: 40px;">
+      </div>
+    </div>
+    <!-- Maximum_Employees -->
+    <div class="form-group row">
+      <label for="id_Maximum_Employees" class="col-sm-3 col-form-label">
+        Maximum Employees:
+      </label>
+      <div class="col-sm-7">
+        <input type="number" class="form-control" placeholder="Required" id="id_Maximum_Employees" name="{{ form.Maximum_Employees.name }}" style="height: 40px;">
+      </div>
+    </div>
+    <!-- SubscriptionKey -->
+    <div class="form-group row">
+      <label for="id_SubscriptionKey" class="col-sm-3 col-form-label">
+        Subscription Key:
+      </label>
+      <div class="col-sm-7">
+        <input type="text" class="form-control" placeholder="Required" id="id_SubscriptionKey" name="{{ form.SubscriptionKey.name }}" style="height: 40px;">
+      </div>
+    </div>
+    <div class="form-group row">
+      <div class="col-sm-10 offset-sm-2" style="margin-top: 20px;">
+        <a href="{% url 'administrator_dashboard' %}" class="btn btn-danger btn-sm">Back</a>
+        <button type="submit" class="btn btn-primary btn-sm">Create</button>
+      </div>
+    </div>
+  </form>
+{% endblock %}
