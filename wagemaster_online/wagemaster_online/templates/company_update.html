@@ -2,27 +2,67 @@
 
 {% block content %}
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Update company</h2>
-    <a href="{% url 'company_list' %}" class="btn btn-danger btn-sm">Back</a>
+    <h2>Update Company</h2>
   </div>
-  <form method="post" action="{% url 'company_update' company.CompanyIdentity %}">
+  <form method="post">
     {% csrf_token %}
-    <div class="form-group">
-      <label for="CompanyName">Company name:</label>
-      <input type="text" class="form-control form-control-sm" id="CompanyName" name="CompanyName" value="{{ company.CompanyName }}" required>
+      
+    <input type="hidden" name="selected_company" value="{{ selected_company_id }}">
+    
+    <!-- ClientIdentity combobox -->
+    <div class="form-group row">
+      <label for="id_ClientIdentity" class="col-sm-3 col-form-label">
+        Client:
+      </label>
+      <div class="col-sm-7">
+        <select class="form-control" id="id_ClientIdentity" name="{{ form.ClientIdentity.name }}" disabled>
+          <option value="{{ client.ClientIdentity }}" selected>
+            {{ client.ClientName }}
+          </option>
+        </select>
+      </div>
     </div>
-    <div class="form-group">
-      <label for="CompanyEmail">Email:</label>
-      <input type="email" class="form-control form-control-sm" id="CompanyEmail" name="CompanyEmail" value="{{ company.CompanyEmail }}" required>
+    <!-- CompanyName -->
+    <div class="form-group row">
+      <label for="id_CompanyName" class="col-sm-3 col-form-label">
+        Company name:
+      </label>
+      <div class="col-sm-7">
+        <input type="text" class="form-control" required  placeholder="Required" id="id_CompanyName" name="{{ form.CompanyName.name }}"  value="{{ company.CompanyName }}"  style="height: 40px;">
+      </div>
     </div>
-    <div class="form-group">
-      <label for="CompanyTel">Phone:</label>
-      <input type="tel" class="form-control form-control-sm" id="CompanyTel" name="CompanyTel" value="{{ company.CompanyTel }}" required>
+    <!-- CompanyEmail -->
+    <div class="form-group row">
+      <label for="id_CompanyEmail" class="col-sm-3 col-form-label">
+        Email:
+      </label>
+      <div class="col-sm-7">
+        <input type="email" class="form-control" required  placeholder="Required" id="id_CompanyEmail" name="{{ form.CompanyEmail.name }}"  value="{{ company.CompanyEmail }}" style="height: 40px;">
+      </div>
     </div>
-    <div class="form-group">
-        <label for="CompanyContactPerson">Phone:</label>
-        <input type="Text" class="form-control form-control-sm" id="CompanyContactPerson" name="CompanyContactPerson" value="{{ company.CompanyContactPerson }}" required>
+    <!-- CompanyContactPerson -->
+    <div class="form-group row">
+      <label for="id_CompanyContactPerson" class="col-sm-3 col-form-label">
+        Contact Person:
+      </label>
+      <div class="col-sm-7">
+        <input type="text" class="form-control" required  placeholder="Required" id="id_CompanyContactPerson" name="{{ form.CompanyContactPerson.name }}" value="{{ company.CompanyContactPerson }}" style="height: 40px;">
+      </div>
     </div>
-    <button type="submit" class="btn btn-primary btn-sm">Update</button>
+    <!-- CompanyTel -->
+    <div class="form-group row">
+      <label for="id_CompanyTel" class="col-sm-3 col-form-label">
+        Tel:
+      </label>
+      <div class="col-sm-7">
+        <input type="tel" class="form-control" required pattern="^[\d\s+-]+$" title="Only digits, spaces, and + - signs are allowed." placeholder="Required" id="id_CompanyTel" name="{{ form.CompanyTel.name }}" value="{{ company.CompanyTel }}" style="height: 40px;">
+      </div>
+    </div>
+    <div class="form-group row">
+      <div class="col-sm-10 offset-sm-2" style="margin-top: 20px;">
+        <a href="{% url 'administrator_dashboard' %}" class="btn btn-danger btn-sm">Back</a>
+        <button type="submit" class="btn btn-primary btn-sm">Update</button>
+      </div>
+    </div>
   </form>
 {% endblock %}

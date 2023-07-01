@@ -4,60 +4,86 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Create Client</h2>
   </div>
-    <form method="post">
-        {% csrf_token %}
-        
-        <!-- ClientName -->
-        <div class="form-group row">
-            <label for="id_ClientName" class="col-sm-3 col-form-label">
-                Client Name:
-            </label>
-            <div class="col-sm-7">
-            <input type="text" class="form-control" placeholder="Required" id="id_ClientName" name="{{ form.ClientName.name }}" style="height: 40px;">
-            </div>
-        </div>
+  <!-- 
+  <style>
+    /* Override the Bootstrap styling for invalid fields */
+    input:not(:focus):invalid {
+        border-color: #ced4da; /* default border color */
+        box-shadow: none;
+    }
 
-        <!-- Username -->
-        <div class="form-group row">
-            <label for="id_Username" class="col-sm-3 col-form-label">
-                Username:
-            </label>
-            <div class="col-sm-7">
-            <input type="text" class="form-control" placeholder="Required" id="id_Username" name="{{ form.username.name }}" style="height: 40px;">
-            </div>
-        </div>
+    /* Custom style for valid fields */
+    input:valid {
+        border-color: #28a745; /* green */
+    }
+  </style>-->
 
-        <!-- ClientEmail -->
-        <div class="form-group row">
-            <label for="id_ClientEmail" class="col-sm-3 col-form-label">
-                Client Email:
-            </label>
-            <div class="col-sm-7">
-            <input type="text" class="form-control" placeholder="Required" id="id_ClientEmail" name="{{ form.ClientEmail.name }}" style="height: 40px;">
+  <!-- Messages -->
+  {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            <div {% if message.tags %} class="alert alert-{{ message.tags }}" {% endif %}>
+                {{ message }}
             </div>
-        </div>
+        {% endfor %}
+    </div>
+  {% endif %}
 
-        <!-- ClientTel -->
-        <div class="form-group row">
-            <label for="id_ClientTel" class="col-sm-3 col-form-label">
-                Tel:
-            </label>
-            <div class="col-sm-7">
-            <input type="text" class="form-control" placeholder="Required" id="id_ClientTel" name="{{ form.ClientTel.name }}" style="height: 40px;">
-            </div>
-        </div>
+  <form method="post">
+    {% csrf_token %}
+    
+    <!-- ClientName -->
+    <div class="form-group row">
+      <label for="id_ClientName" class="col-sm-3 col-form-label">
+        Client Name:
+      </label>
+      <div class="col-sm-7">
+        <input type="text" class="form-control" placeholder="Required" id="id_ClientName" name="{{ form.ClientName.name }}" required minlength="3" maxlength="100" style="height: 40px;">
+      </div>
+    </div>
 
-        <!-- ClientContactPerson -->
-        <div class="form-group row">
-            <label for="id_ClientContactPerson" class="col-sm-3 col-form-label">
-                Contact Person:
-            </label>
-            <div class="col-sm-7">
-            <input type="text" class="form-control" placeholder="Required" id="id_ClientContactPerson" name="{{ form.ClientContactPerson.name }}" style="height: 40px;">
-            </div>
-        </div>
-        
-        <a href="{% url 'administrator_dashboard' %}" class="btn btn-danger btn-sm">Back</a>
-        <button type="submit" class="btn btn-primary btn-sm">Create</button>
-    </form>
+    <!-- Username -->
+    <div class="form-group row">
+      <label for="id_Username" class="col-sm-3 col-form-label">
+        Username:
+      </label>
+      <div class="col-sm-7">
+        <input type="text" class="form-control" placeholder="Required" id="id_Username" name="{{ form.username.name }}" required pattern="^[a-zA-Z0-9._-]{3,}$" title="At least 3 characters and only letters, numbers, dashes, underscores, and periods are allowed." style="height: 40px;">
+      </div>
+    </div>
+
+    <!-- ClientEmail -->
+    <div class="form-group row">
+      <label for="id_ClientEmail" class="col-sm-3 col-form-label">
+        Client Email:
+      </label>
+      <div class="col-sm-7">
+        <input type="email" class="form-control" placeholder="Required" id="id_ClientEmail" name="{{ form.ClientEmail.name }}" required style="height: 40px;">
+      </div>
+    </div>
+
+    <!-- ClientTel -->
+    <div class="form-group row">
+      <label for="id_ClientTel" class="col-sm-3 col-form-label">
+        Tel:
+      </label>
+      <div class="col-sm-7">
+        <input type="tel" class="form-control" placeholder="Required" id="id_ClientTel" name="{{ form.ClientTel.name }}" required pattern="^[\d\s+-]+$" title="Only digits, spaces, and + - signs are allowed." style="height: 40px;">
+      </div>
+    </div>
+
+    <!-- ClientContactPerson -->
+    <div class="form-group row">
+      <label for="id_ClientContactPerson" class="col-sm-3 col-form-label">
+        Contact Person:
+      </label>
+      <div class="col-sm-7">
+        <input type="text" class="form-control" placeholder="Required" id="id_ClientContactPerson" name="{{ form.ClientContactPerson.name }}" required minlength="3" maxlength="100" style="height: 40px;">
+      </div>
+    </div>
+    
+    <a href="{% url 'administrator_dashboard' %}" class="btn btn-danger btn-sm">Back</a>
+    <button type="submit" class="btn btn-primary btn-sm">Create</button>
+  </form>
+
 {% endblock %}

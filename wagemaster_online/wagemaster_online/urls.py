@@ -19,7 +19,9 @@ from django.urls import path
 from wagemaster_online.views import company_detail, company_list, company_create, company_update, company_delete,create_client
 from wagemaster_online.views import UserLoginView, register, home,administrator_dashboard, client_dashboard,client_list
 from wagemaster_online.views import dashboard, fetch_companies,subscription_create,fetch_subscriptions
+from wagemaster_online.views import client_update,check_username_availability,subscription_update
 from django.contrib.auth import views as auth_views
+from .views import ClientDeleteView
 
 urlpatterns = [
     path('', home, name='home'),
@@ -30,24 +32,20 @@ urlpatterns = [
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('login/', UserLoginView.as_view(), name='login'),
-    
     path('admin/dashboard/', administrator_dashboard, name='administrator_dashboard'),
     path('fetch_companies/', fetch_companies, name='fetch_companies'),
     path('fetch_subscriptions/', fetch_subscriptions, name='fetch_subscriptions'),
     path('admin/dashboard/', dashboard, name='dashboard'),
-
     path('create-client/', create_client, name='create_client'),
+    path('client/update/', client_update, name='client_update'),  
+    path('check_username_availability/', check_username_availability, name='check_username_availability'),
     path('client-list/', client_list, name='client_list'),
     path('client/dashboard/', client_dashboard, name='client_dashboard'),
-
-
+    path('client_delete/', ClientDeleteView.as_view(), name='client_delete'),
     path('company/list/', company_list, name='company_list'),
     path('company/create/', company_create, name='company_create'),
-    path('company/update/<int:company_id>/', company_update, name='company_update'),
-    path('company/delete/<int:company_id>/', company_delete, name='company_delete'),
-    path('company/detail/<int:company_id>/', company_detail, name='company_detail'),
-
+    path('company_update/', company_update, name='company_update'),
+    path('subscription_update/', subscription_update, name='subscription_update'),
     path('subscription/create/', subscription_create, name='subscription_create'),
-
     path('admin/', admin.site.urls),
 ]

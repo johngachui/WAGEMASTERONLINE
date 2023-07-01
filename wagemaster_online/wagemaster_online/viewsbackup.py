@@ -13,13 +13,9 @@ from django.utils.crypto import get_random_string
 from django.contrib import messages
 import pdb
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from django.views import View
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
-#@method_decorator(csrf_exempt, name='dispatch')
 
 def home(request):
     return render(request, 'home.html')
@@ -58,36 +54,57 @@ def register(request):
     return render(request, 'registration.html')
 
 def create_client(request):
+    #pdb.set_trace()
     if request.method == 'POST':
         form = ClientForm(request.POST)
         if form.is_valid():
             client = form.save(commit=False)
             username = form.cleaned_data['username']  # Get the entered username
             
-            # Check if a user with the same username already exists
-            existing_user = User.objects.filter(username=username).exists()
-            if existing_user:
-                messages.error(request, 'Username already exists. Please choose a different username.')
-                return render(request, 'create_client.html', {'form': form}) # Redirect back to the same form
+            try:
+                # Check if a user with the same username already exists
+                existing_user = User.objects.filter(username=username).exists()
+                if existing_user:
+                    messages.error(request, 'Username already exists. Please choose a different username.')
+                    return redirect('administrator_dashboard')
 
-            # Create a new user with the entered username
-            user = User.objects.create_user(username=username)
-            
-            # Assign the user instance to the ClientUserID field
-            client.ClientUserID = user
-            
-            # Save the user and client objects
-            user.save()
-            client.save()
+                # Create a new user with the entered username
+                user = User.objects.create_user(username=username)
+                client.ClientUserID = user.id
+                logger.debug(f"Username: {username}")
+                logger.debug(f"User ID: {user.id}")
+                logger.debug(f"Client: {client}")
+                # Create a user profile with a one-time password
+                one_time_password = generate_one_time_password()
+                user.set_password(one_time_password)
+                user.is_administrator = False
+                
 
-            # Continue with the remaining logic
-            # messages.success(request, 'Client successfully created.')
-            return redirect('administrator_dashboard')
+                try:
+                    user.save()
+                    logger.debug("User saved successfully")
+                except Exception as e:
+                    logger.exception(f"Error saving user: {e}")
+                
+                try:
+                    client.save()
+                    logger.debug("Client saved successfully")
+                except Exception as e:
+                    logger.exception(f"Error saving client: {e}")
+
+                # Send the user details via email
+                send_one_time_password_email(client.ClientEmail, one_time_password)
+
+                return redirect('administrator_dashboard')
+            except User.DoesNotExist:
+                # Handle the case when the user does not exist
+                messages.error(request, 'Invalid username. Please try again.')
+                return redirect('administrator_dashboard')
     else:
+        print(form.errors)  # Print form errors to the console for debugging purposes
+
         form = ClientForm()
-
     return render(request, 'create_client.html', {'form': form})
-
 
 class UserLoginView(LoginView):
     template_name = 'login.html'
@@ -106,64 +123,17 @@ def client_list(request):
 def client_update(request):
     selected_client_id = request.GET.get('selected_client')
     client = get_object_or_404(Client, ClientIdentity=selected_client_id)
-
-    # Retrieve the associated user for the client
-    user = client.ClientUserID
     
     if request.method == 'POST':
         form = ClientForm(request.POST, instance=client)
         if form.is_valid():
-            # Get the original username from the user instance
-            original_username = user.username
-            # Check if the username has changed
-            new_username = form.cleaned_data['username']
-            if original_username != new_username:
-                # Check if the new username is already in use
-                if User.objects.filter(username=new_username).exists():
-                    # Provide feedback to the user
-                    messages.error(request, "Username already in use. Please choose another one.")
-                else:
-                    # Update the username in the User model
-                    user.username = new_username
-                    user.save()
-                    form.save()
-                    #messages.success(request, "Client information successfully updated!")
-                    return redirect('administrator_dashboard')
-            else:
-                form.save()
-                messages.success(request, "Client information successfully updated!")
-                return redirect('administrator_dashboard')
-        
+            form.save()
+            # Redirect to a success page or perform any other desired action
     else:
-        # Populate the form with the client details and the original username
-        form = ClientForm(instance=client, initial={'username': user.username})
+        form = ClientForm(instance=client)
 
-    context = {'form': form, 'selected_client_id': selected_client_id, 'client': client, 'username': user.username}
-
+    context = {'form': form, 'selected_client_id': selected_client_id, 'client': client}
     return render(request, 'client_update.html', context)
-
-class ClientDeleteView(View):
-    def post(self, request, *args, **kwargs):
-        client_id = request.POST.get('client_id')
-        client = get_object_or_404(Client, ClientIdentity=client_id)
-        user = get_object_or_404(User, id=client.ClientUserID_id)
-        client.delete()
-        user.delete()
-        return JsonResponse({'status': 'success'})
-
-def check_username_availability(request):
-    username = request.GET.get('username')
-    client_id = request.GET.get('client_id')
-
-    if client_id:
-        # Exclude the current client from the check
-        exists = User.objects.exclude(client__ClientIdentity=client_id).filter(username=username).exists()
-    else:
-        # Check for any user with the given username
-        exists = User.objects.filter(username=username).exists()
-
-    return JsonResponse({'exists': exists})
-
 
 def user_list(request):
     users = User.objects.all()
@@ -195,26 +165,6 @@ def company_create(request):
     
     return render(request, 'company_create.html', {'form': form, 'selected_client_id': selected_client_id, 'client': client})
 
-def company_update(request):
-    selected_company_id = request.GET.get('selected_company')
-    selected_client_id = request.GET.get('selected_client')
-    # Get the company object based on the selected_company_id
-    company = get_object_or_404(Company, CompanyIdentity=selected_company_id)
-    client = get_object_or_404(Client, ClientIdentity=selected_client_id)
-    # Handle form submission
-    if request.method == 'POST':
-        # Initialize the form with the submitted data and the existing company instance
-        form = CompanyForm(request.POST, instance=company)
-        if form.is_valid():
-            # Save the updated company object
-            form.save()
-            return redirect('administrator_dashboard')
-    else:
-        # Prepopulate the form with the existing company data
-        form = CompanyForm(instance=company)
-    
-    return render(request, 'company_update.html', {'form': form, 'selected_company_id': selected_company_id, 'company': company, 'client': client})
-
 def subscription_create(request):
     #pdb.set_trace()
     selected_company_id = request.GET.get('selected_company')
@@ -233,31 +183,16 @@ def subscription_create(request):
         
     return render(request, 'subscription_create.html', {'form': form, 'selected_company_id': selected_company_id, 'company': company})
 
-def subscription_update(request):
-    selected_subscription_id = request.GET.get('selected_subscription')
-    selected_company_id = request.GET.get('selected_company')
-
-    subscription = get_object_or_404(Subscription, SubscriptionID=selected_subscription_id)
-    company = get_object_or_404(Company, CompanyIdentity=selected_company_id)
-    
+def company_update(request, company_id):
+    company = get_object_or_404(Company, CompanyIdentity=company_id)
     if request.method == 'POST':
-        form = SubscriptionForm(request.POST, instance=subscription)
-        if form.is_valid():
-            form.save()
-            return redirect('administrator_dashboard')
-        else:
-            print(form.errors)
-    else:
-        form = SubscriptionForm(instance=subscription)
-
-    context = {
-        'form': form,
-        'selected_subscription_id': selected_subscription_id,
-        'selected_company_id': selected_company_id,
-        'subscription': subscription,
-        'company': company
-    }
-    return render(request, 'subscription_update.html', context)
+        company.CompanyName = request.POST.get('CompanyName')
+        company.CompanyEmail = request.POST.get('CompanyEmail')
+        company.CompanyTel = request.POST.get('CompanyTel')
+        company.CompanyContactPerson = request.POST.get('CompanyContactPerson')
+        company.save()
+        return redirect('company_list')
+    return render(request, 'company_update.html', {'company': company})
 
 def company_delete(request, company_id):
     company = get_object_or_404(Company, CompanyIdentity=company_id)
@@ -269,13 +204,12 @@ def company_delete(request, company_id):
 def administrator_dashboard(request):
     selected_client_id = request.GET.get('selected_client')
     selected_company_id = request.GET.get('selected_company')
-    selected_subscription_id =request.GET.get('selected_subscription')
 
-    clients = Client.objects.all().order_by('ClientName')
-    companies = Company.objects.all().order_by('CompanyName')
-    subscriptions = Subscription.objects.all().order_by('SubscriptionStartDate')
-    divisions = Division.objects.all().order_by('DivisionName')
-    employees = Employee.objects.all().order_by('StaffName')
+    clients = Client.objects.all()
+    companies = Company.objects.all()
+    subscriptions = Subscription.objects.all()
+    divisions = Division.objects.all()
+    employees = Employee.objects.all()
 
     client_form = ClientForm()
     company_form = CompanyForm()
@@ -293,8 +227,7 @@ def administrator_dashboard(request):
         'subscription_form': subscription_form,
         
         'selected_client_id': selected_client_id,
-        'selected_company_id': selected_company_id,
-        'selected_subscription_id':selected_subscription_id
+        'selected_company_id': selected_company_id
     }
     return render(request, 'administrator_dashboard.html', context)
 

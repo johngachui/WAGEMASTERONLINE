@@ -7,14 +7,13 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
 
-
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User
 
 class ClientForm(forms.ModelForm):
-    username = forms.CharField(label='Username')  # Add username field
-
+    username = forms.CharField(label='Username', required=True)
+    
     class Meta:
         model = Client
         fields = ['username', 'ClientName', 'ClientEmail', 'ClientTel', 'ClientContactPerson']
@@ -30,17 +29,13 @@ class CompanyForm(forms.ModelForm):
         widgets = {'ClientIdentity': forms.HiddenInput()}
 
 class SubscriptionForm(forms.ModelForm):
-    #SubscriptionActive = forms.BooleanField(
-    #    widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
-    #)
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['CompanyIdentity'].disabled = True
 
     class Meta:
         model = Subscription
-        fields = ['SubscriptionStartDate', 'SubscriptionEndDate', 'SubscriptionDatePaid', 'SubscriptionActive', 'SubscriptionKey', 'CompanyIdentity']
+        fields = ['SubscriptionID', 'SubscriptionStartDate', 'SubscriptionEndDate', 'SubscriptionDatePaid', 'SubscriptionActive','Maximum_Employees', 'SubscriptionKey', 'CompanyIdentity']
         widgets = {'CompanyIdentity': forms.HiddenInput()}
        
 
