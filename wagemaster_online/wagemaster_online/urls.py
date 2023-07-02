@@ -21,7 +21,7 @@ from wagemaster_online.views import UserLoginView, register, home,administrator_
 from wagemaster_online.views import dashboard, fetch_companies,subscription_create,fetch_subscriptions
 from wagemaster_online.views import client_update,check_username_availability,subscription_update
 from django.contrib.auth import views as auth_views
-from .views import ClientDeleteView
+from .views import ClientDeleteView,CompanyDeleteView,SubscriptionDeleteView
 
 urlpatterns = [
     path('', home, name='home'),
@@ -41,7 +41,11 @@ urlpatterns = [
     path('check_username_availability/', check_username_availability, name='check_username_availability'),
     path('client-list/', client_list, name='client_list'),
     path('client/dashboard/', client_dashboard, name='client_dashboard'),
+
     path('client_delete/', ClientDeleteView.as_view(), name='client_delete'),
+    path('company_delete/', CompanyDeleteView.as_view(), name='company_delete'),
+    path('subscription_delete/', SubscriptionDeleteView.as_view(), name='subscription_delete'),
+
     path('company/list/', company_list, name='company_list'),
     path('company/create/', company_create, name='company_create'),
     path('company_update/', company_update, name='company_update'),

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from datetime import date
 
 class User(AbstractUser):
     is_administrator = models.BooleanField(default=False)
@@ -37,12 +38,12 @@ class Subscription(models.Model):
     
     CompanyIdentity = models.ForeignKey(Company, on_delete=models.CASCADE,
                                        related_name='subscription', db_column='CompanyIdentity')
-    SubscriptionKey = models.TextField(blank=True, null=True)
-    SubscriptionStartDate = models.DateField()
-    SubscriptionEndDate = models.DateField()
-    SubscriptionDatePaid = models.DateField(blank=True,null=True)
-    SubscriptionActive = models.BooleanField(default=False, blank=True, null=True)
-    Maximum_Employees = models.IntegerField(blank=True,null=True,default=10)
+    SubscriptionStartDate = models.DateField(default=date(2022, 1, 1))
+    SubscriptionEndDate = models.DateField(default=date(2022, 1, 1))
+    SubscriptionActionDate = models.DateField(default=date(2022, 1, 1))
+    Maximum_Employees = models.IntegerField(default=10)
+    SubscriptionKey = models.TextField(default ="n/a")
+    SubscriptionStatus = models.TextField(default ="Pending")
     class Meta:
         db_table = 'subscription'
 

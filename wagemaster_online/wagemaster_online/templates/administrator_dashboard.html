@@ -24,6 +24,7 @@
             // Show the selected form when a button is clicked
             $('button[data-action-url]').click(function() {
               var formId = $(this).data('form');
+
               $('form').hide();
               $('#' + formId).show();
           
@@ -31,21 +32,21 @@
               var formAction = $(this).data('action-url');
 
               var selectedClientId = $('input[name="selected_client"]:checked').val();
-
+              var selectedCompanyId = $('input[name="selected_company"]:checked').val();
+              var selectedSubscriptionId = $('input[name="selected_subscription"]:checked').val();
+              
               if (formId === "company_create") {
                 var formActionUrl = new URL(formAction, window.location.href); // Use the current URL as the base URL
                 formActionUrl.searchParams.set('selected_client', selectedClientId);
                 formAction = formActionUrl.toString();
               }
  
-
               if (formId === "client_update") {
                 var formActionUrl = new URL(formAction, window.location.href); // Use the current URL as the base URL
                 formActionUrl.searchParams.set('selected_client', selectedClientId);
                 formAction = formActionUrl.toString();
               }
-          
-              var selectedCompanyId = $('input[name="selected_company"]:checked').val();
+                
 
               if (formId === "company_update") {
                 var formActionUrl = new URL(formAction, window.location.href); // Use the current URL as the base URL
@@ -59,15 +60,13 @@
                 formActionUrl.searchParams.set('selected_company', selectedCompanyId);
                 formAction = formActionUrl.toString();
               }
-
-              var selectedSubscriptionId = $('input[name="selected_subscription"]:checked').val();
-
+              
               if (formId === "subscription_update") {
                 var formActionUrl = new URL(formAction, window.location.href); // Use the current URL as the base URL
                 formActionUrl.searchParams.set('selected_subscription', selectedSubscriptionId);
                 formActionUrl.searchParams.set('selected_company', selectedCompanyId);
                 formAction = formActionUrl.toString();
-            }
+              }
           
               $('#' + formId).attr('action', formAction);
             });
@@ -75,7 +74,63 @@
             // Submit the form when a button is clicked
             $('button[data-form]').click(function() {
               var formId = $(this).data('form');
-              $('#' + formId).submit();
+
+              if (formId === 'subscription_update' || formId === 'company_update' || formId === 'client_update') {
+                // Check if a client has been selected
+                if (formId === 'client_update'){
+                  var selectedClientId = $('input[name="selected_client"]:checked').val();
+                  if(!selectedClientId) {
+                    alert("Please select a client.");
+                    return;
+                  }else{
+                    $('#' + formId).submit();
+                  }  
+                }
+                // Check if a company has been selected
+                if (formId === 'company_update'){
+                  var selectedCompanyId = $('input[name="selected_company"]:checked').val();
+                  if(!selectedCompanyId) {
+                    alert("Please select a company.");
+                    return;
+                  }else{
+                    $('#' + formId).submit();
+                  }  
+                }
+                // Check if a subscription has been selected
+                if (formId === 'subscription_update'){
+                  var selectedSubscriptionId = $('input[name="selected_subscription"]:checked').val();
+                  if(!selectedSubscriptionId) {
+                    alert("Please select a subscription.");
+                    return;
+                  }else{
+                    $('#' + formId).submit();
+                  }  
+                }
+              }else{
+                if (formId === 'company_create' || formId === 'subscription_create') {
+                  if (formId === 'company_create'){
+                    var selectedClientId = $('input[name="selected_client"]:checked').val();
+                    if(!selectedClientId) {
+                      alert("Please select a client.");
+                      return;
+                    }else{
+                      $('#' + formId).submit();
+                    }  
+                  }
+                  // Check if a subscription has been selected
+                  if (formId === 'subscription_create'){
+                    var selectedCompanyId = $('input[name="selected_company"]:checked').val();
+                    if(!selectedCompanyId) {
+                      alert("Please select a company.");
+                      return;
+                    }else{
+                      $('#' + formId).submit();
+                    }
+                  }
+                }else{
+                  $('#' + formId).submit();
+                }
+              }
             });
           
             // Update Company list when client is selected
@@ -138,14 +193,14 @@
                     var radioButton = $('<input type="radio" name="selected_subscription">').val(subscription.id);
                     var startDate = $('<span>').text(formatDate(subscription.startdate));
                     var stopDate = $('<span>').text(formatDate(subscription.stopdate));
-                    var isActive = $('<span>').text(subscription.isactive ? 'Active' : '');
+                    var subscriptionstatus = $('<span>').text(subscription.subscriptionstatus);
                     listItem.append(radioButton);
                     listItem.append(" ");
                     listItem.append(startDate);
                     listItem.append('&emsp;');
                     listItem.append(stopDate);
                     listItem.append('&emsp;');
-                    listItem.append(isActive);
+                    listItem.append(subscriptionstatus);
                     subscriptionList.append(listItem);
                   });
                 },
@@ -220,6 +275,7 @@
                 <div>
                   <button type="button" data-form="company_create" data-action-url="{% url 'company_create' %}?selected_client={{ client.ClientIdentity }}" class="btn btn-primary btn-sm" style="margin-top: 10px;">New Company</button>
                   <button type="button" data-form="company_update" data-action-url="{% url 'company_update' %}?selected_company={{ client.CompanyIdentity }}&selected_client={{ client.ClientIdentity }}" class="btn btn-info btn-sm" style="margin-top: 10px;">Edit Selected</button>
+                  <button type="button" id="delete-company" class="btn btn-danger btn-sm" style="margin-top: 10px;">Delete Selected</button>
                 </div>
                 <!-- Subscription List -->
                 <div style = "margin-top: 20px; font-weight:bold;">
@@ -238,6 +294,7 @@
                 <div>
                   <button type="button" data-form="subscription_create" data-action-url="{% url 'subscription_create' %}?selected_company={{ company.CompanyIdentity }}" class="btn btn-primary btn-sm" style="margin-top: 10px;">New Subscription</button>
                   <button type="button" data-form="subscription_update" data-action-url="{% url 'subscription_update' %}?selected_subscription={{ subscription.SubscriptionID }}&selected_company={{ company.CompanyIdentity }}" class="btn btn-info btn-sm" style="margin-top: 10px;">Edit Selected</button>
+                  <button type="button" id="delete-subscription" class="btn btn-danger btn-sm" style="margin-top: 10px;">Delete Selected</button>
                 </div>
                 <div>
                   <!-- Create Client Form -->
@@ -330,7 +387,7 @@
 
       var confirmed = confirm("Are you sure you want to delete this client? This cannot be undone.");
       if (confirmed) {
-          var doubleConfirmed = confirm("This action will also delete the corresponding User. Are you sure you want to proceed?");
+          var doubleConfirmed = confirm("This action will also delete the corresponding company data. Are you sure you want to proceed?");
           if (doubleConfirmed) {
               $.ajax({
                   url: "{% url 'client_delete' %}",
@@ -348,6 +405,66 @@
               });
           }
       }
+  });
+  // On delete company button click
+  $('#delete-company').on('click', function () {
+    var selectedCompanyId = $('input[name="selected_company"]:checked').val();
+    
+    if (!selectedCompanyId) {
+        alert("Please select a company to delete.");
+        return;
+    }
+
+    var confirmed = confirm("Are you sure you want to delete this company? This cannot be undone.");
+    if (confirmed) {
+        var doubleConfirmed = confirm("This action will also delete unsynced employee data. Are you sure you want to proceed?");
+        if (doubleConfirmed) {
+            $.ajax({
+                url: "{% url 'company_delete' %}",
+                type: "POST",
+                data: {
+                    'company_id': selectedCompanyId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function () {
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+    }
+  });
+  // On delete subscription button click
+  $('#delete-subscription').on('click', function () {
+    var selectedSubscriptionId = $('input[name="selected_subscription"]:checked').val();
+    
+    if (!selectedSubscriptionId) {
+        alert("Please select a subscription to delete.");
+        return;
+    }
+
+    var confirmed = confirm("Are you sure you want to delete this subscription? This cannot be undone.");
+    if (confirmed) {
+        var doubleConfirmed = confirm("Are you sure you want to proceed?");
+        if (doubleConfirmed) {
+            $.ajax({
+                url: "{% url 'subscription_delete' %}",
+                type: "POST",
+                data: {
+                    'subscription_id': selectedSubscriptionId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function () {
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+    }
   });
 </script>
 </html>

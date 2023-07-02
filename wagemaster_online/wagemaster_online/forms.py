@@ -35,7 +35,7 @@ class SubscriptionForm(forms.ModelForm):
 
     class Meta:
         model = Subscription
-        fields = ['SubscriptionID', 'SubscriptionStartDate', 'SubscriptionEndDate', 'SubscriptionDatePaid', 'SubscriptionActive','Maximum_Employees', 'SubscriptionKey', 'CompanyIdentity']
+        fields = ['SubscriptionID', 'SubscriptionStartDate', 'SubscriptionEndDate', 'SubscriptionStatus','SubscriptionActionDate','Maximum_Employees', 'SubscriptionKey', 'CompanyIdentity']
         widgets = {'CompanyIdentity': forms.HiddenInput()}
        
 

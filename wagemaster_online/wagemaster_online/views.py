@@ -150,6 +150,20 @@ class ClientDeleteView(View):
         client.delete()
         user.delete()
         return JsonResponse({'status': 'success'})
+    
+class CompanyDeleteView(View):
+    def post(self, request, *args, **kwargs):
+        company_id = request.POST.get('company_id')
+        company = get_object_or_404(Company, CompanyIdentity=company_id)
+        company.delete()
+        return JsonResponse({'status': 'success'})    
+
+class SubscriptionDeleteView(View):
+    def post(self, request, *args, **kwargs):
+        subscription_id = request.POST.get('subscription_id')
+        subscription = get_object_or_404(Subscription, SubscriptionID=subscription_id)
+        subscription.delete()
+        return JsonResponse({'status': 'success'})    
 
 def check_username_availability(request):
     username = request.GET.get('username')
@@ -256,7 +270,7 @@ def subscription_update(request):
         'selected_company_id': selected_company_id,
         'subscription': subscription,
         'company': company
-    }
+        }
     return render(request, 'subscription_update.html', context)
 
 def company_delete(request, company_id):
@@ -315,7 +329,7 @@ def fetch_subscriptions(request):
     selected_company_id = request.GET.get('selected_company_id')
     print("Selected Company ID:", selected_company_id)
     subscriptions = Subscription.objects.filter(CompanyIdentity=selected_company_id)
-    subscription_data = [{'startdate': subscription.SubscriptionStartDate, 'stopdate': subscription.SubscriptionEndDate, 'isactive': subscription.SubscriptionActive, 'id': subscription.SubscriptionID } for subscription in subscriptions]
+    subscription_data = [{'startdate': subscription.SubscriptionStartDate, 'stopdate': subscription.SubscriptionEndDate, 'subscriptionstatus': subscription.SubscriptionStatus, 'id': subscription.SubscriptionID } for subscription in subscriptions]
     return JsonResponse(subscription_data, safe=False)
 
 def generate_one_time_password():

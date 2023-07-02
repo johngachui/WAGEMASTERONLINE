@@ -51,24 +51,32 @@
         <input type="date" class="form-control" required placeholder="Required" id="id_SubscriptionEndDate" name="SubscriptionEndDate" value="{{ subscription.SubscriptionEndDate|date:'Y-m-d'  }}"  style="height: 40px;">
       </div>
     </div>
-    <!-- SubscriptionActive -->
+    <!-- SubscriptionStatus -->
     <div class="form-group row">
-      <label for="id_SubscriptionActive" class="col-sm-3 col-form-label">
+      <label for="id_SubscriptionStatus" class="col-sm-3 col-form-label" value="{{ subscription.SubscriptionKey }}" >
         Subscription Active:
       </label>
       <div class="col-sm-7">
-        <div class="form-check">
-          <input type="checkbox" class="form-check-input" id="id_SubscriptionActive" name="SubscriptionActive" {% if subscription.SubscriptionActive %}checked{% endif %}  style="margin-top: 10px;">
-        </div>  
+        <select class="form-control" required id="id_SubscriptionStatus" name="{{ form.SubscriptionStatus.name }}">
+          <option value="Trial" {% if subscription.SubscriptionStatus == 'Trial' %}selected{% endif %}>Trial</option>
+          <option value="Trial Expired" {% if subscription.SubscriptionStatus == 'Trial Expired' %}selected{% endif %}>Trial Expired</option>
+          <option value="Live" {% if subscription.SubscriptionStatus == 'Live' %}selected{% endif %}>Live</option>
+          <option value="Dunning" {% if subscription.SubscriptionStatus == 'Dunning' %}selected{% endif %}>Dunning</option>
+          <option value="Unpaid" {% if subscription.SubscriptionStatus == 'Unpaid' %}selected{% endif %}>Unpaid</option>
+          <option value="Future" {% if subscription.SubscriptionStatus == 'Future' %}selected{% endif %}>Future</option>
+          <option value="Non renewing" {% if subscription.SubscriptionStatus == 'Non renewing' %}selected{% endif %}>Non renewing</option>
+          <option value="Canceled" {% if subscription.SubscriptionStatus == 'Canceled' %}selected{% endif %}>Canceled</option>
+          <option value="Expired" {% if subscription.SubscriptionStatus == 'Expired' %}selected{% endif %}>Expired</option>
+        </select>
       </div>
     </div>
-    <!-- SubscriptionDatePaid -->
+    <!-- SubscriptionActionDate -->
     <div class="form-group row">
-      <label for="id_SubscriptionDatePaid" class="col-sm-3 col-form-label">
-        Date Paid:
+      <label for="id_SubscriptionActionDate" class="col-sm-3 col-form-label">
+        Company Action Date:
       </label>
       <div class="col-sm-7">
-        <input type="date" class="form-control" placeholder="Required" id="id_SubscriptionDatePaid" name="SubscriptionDatePaid" value="{{ subscription.SubscriptionDatePaid|date:'Y-m-d'  }}"  style="height: 40px;">
+        <input type="date" class="form-control" placeholder="Required" id="id_SubscriptionActionDate" name="SubscriptionActionDate" value="{{ subscription.SubscriptionActionDate|date:'Y-m-d'  }}"  style="height: 40px;">
       </div>
     </div>
     <!-- Maximum_Employees -->
