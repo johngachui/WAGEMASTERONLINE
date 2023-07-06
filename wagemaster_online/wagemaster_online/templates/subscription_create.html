@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base-leaveAdmin.html' %}
 
 {% block content %}
   <div class="d-flex justify-content-between align-items-center mb-3">
@@ -7,6 +7,8 @@
   <form method="post" action="{% url 'subscription_create' %}?selected_company={{ selected_company_id }}">
     {% csrf_token %}
     <input type="hidden" name="selected_company" value="{{ selected_company_id }}">
+    <input type="hidden" name="selected_client" value="{{ selected_client_id }}">
+    <input type="hidden" name="selected_subscription" value="{{ selected_subscription_id }}">
     <!-- CompanyIdentity combobox -->
     <div class="form-group row">
       <label for="id_CompanyIdentity" class="col-sm-3 col-form-label">
@@ -86,7 +88,7 @@
     </div>
     <div class="form-group row">
       <div class="col-sm-10 offset-sm-2" style="margin-top: 20px;">
-        <a href="{% url 'administrator_dashboard' %}" class="btn btn-danger btn-sm">Back</a>
+        <a href="{% url 'administrator_dashboard' %}?selected_client={{ client.ClientIdentity }}&selected_company={{ selected_company_id }}&selected_subscription={{ selected_subscription_id }}" class="btn btn-danger btn-sm">Back</a>
         <button type="submit" class="btn btn-primary btn-sm">Create</button>
       </div>
     </div>

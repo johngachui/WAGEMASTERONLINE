@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'wagemaster_online',
-    'bootstrap5'
+    'bootstrap5',
+   
 ]
 
 

@@ -16,6 +16,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
+from django.urls import reverse
+from urllib.parse import urlencode
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -79,10 +81,10 @@ def create_client(request):
             # Save the user and client objects
             user.save()
             client.save()
-
-            # Continue with the remaining logic
-            # messages.success(request, 'Client successfully created.')
-            return redirect('administrator_dashboard')
+            created_client_id = client.pk
+            #return redirect('administrator_dashboard')
+            url = reverse('administrator_dashboard') + '?selected_client=' + str(created_client_id)
+            return redirect(url)
     else:
         form = ClientForm()
 
@@ -192,8 +194,10 @@ def company_list(request):
     return render(request, 'company_list.html', {'companies': companies})
 
 def company_create(request):
+    selected_company_id = request.GET.get('selected_company')
     selected_client_id = request.GET.get('selected_client')
-    print("Selected Client ID:", selected_client_id)
+    
+    print("selected_company_id:", selected_company_id)
     clients = Client.objects.all()
     for client in clients:
         print(client.ClientIdentity)
@@ -202,12 +206,26 @@ def company_create(request):
     if request.method == 'POST':
         form = CompanyForm(request.POST, initial={'ClientIdentity': client})
         if form.is_valid():
-            form.save()
-            return redirect('administrator_dashboard')
+            company = form.save()
+
+            # Get the created company ID
+            created_company_id = company.pk
+
+            # Build the URL parameters for the administrator_dashboard
+            params = {
+                'selected_client': selected_client_id,
+                'selected_company': created_company_id
+            }
+
+            # Construct the URL for the administrator_dashboard with the client and company IDs
+            url = reverse('administrator_dashboard') + '?' + urlencode(params)
+
+            # Redirect to the administrator_dashboard with the client and company IDs in the URL
+            return redirect(url)
     else:
         form = CompanyForm(initial={'ClientIdentity': client})
     
-    return render(request, 'company_create.html', {'form': form, 'selected_client_id': selected_client_id, 'client': client})
+    return render(request, 'company_create.html', {'form': form, 'selected_company_id': selected_company_id, 'selected_client_id': selected_client_id, 'client': client})
 
 def company_update(request):
     selected_company_id = request.GET.get('selected_company')
@@ -221,8 +239,21 @@ def company_update(request):
         form = CompanyForm(request.POST, instance=company)
         if form.is_valid():
             # Save the updated company object
-            form.save()
-            return redirect('administrator_dashboard')
+            company = form.save()
+
+            # Get the created company ID
+            updated_company_id = company.pk
+            # Build the URL parameters for the administrator_dashboard
+            params = {
+                'selected_client': selected_client_id,
+                'selected_company': updated_company_id
+            }
+
+            # Construct the URL for the administrator_dashboard with the client and company IDs
+            url = reverse('administrator_dashboard') + '?' + urlencode(params)
+
+            # Redirect to the administrator_dashboard with the client and company IDs in the URL
+            return redirect(url)
     else:
         # Prepopulate the form with the existing company data
         form = CompanyForm(instance=company)
@@ -232,25 +263,40 @@ def company_update(request):
 def subscription_create(request):
     #pdb.set_trace()
     selected_company_id = request.GET.get('selected_company')
+    selected_client_id = request.GET.get('selected_client')
+    selected_subscription_id = request.GET.get('selected_subscription')
     company = get_object_or_404(Company, CompanyIdentity=selected_company_id)
     
     if request.method == 'POST':
         form = SubscriptionForm(request.POST, initial={'CompanyIdentity': company})
         if form.is_valid():
-            form.save()
-            return redirect('administrator_dashboard')
+            subscription = form.save()
+
+            # Get the created company ID
+            created_subscription_id = subscription.pk
+
+            # Build the URL parameters for the administrator_dashboard
+            params = {
+                'selected_client': selected_client_id,
+                'selected_company': selected_company_id,
+                'selected_subscription': created_subscription_id
+            }
+
+            # Construct the URL for the administrator_dashboard with the client and company IDs
+            url = reverse('administrator_dashboard') + '?' + urlencode(params)
         else:
             print(form.errors)
     else:
 
         form = SubscriptionForm(initial={'CompanyIdentity': company})
         
-    return render(request, 'subscription_create.html', {'form': form, 'selected_company_id': selected_company_id, 'company': company})
+    return render(request, 'subscription_create.html', {'form': form, 'selected_subscription_id':selected_subscription_id,'selected_client_id':selected_client_id,'selected_company_id': selected_company_id, 'company': company})
 
 def subscription_update(request):
     selected_subscription_id = request.GET.get('selected_subscription')
     selected_company_id = request.GET.get('selected_company')
-
+    selected_client_id = request.GET.get('selected_client')
+    
     subscription = get_object_or_404(Subscription, SubscriptionID=selected_subscription_id)
     company = get_object_or_404(Company, CompanyIdentity=selected_company_id)
     
@@ -268,6 +314,7 @@ def subscription_update(request):
         'form': form,
         'selected_subscription_id': selected_subscription_id,
         'selected_company_id': selected_company_id,
+        'selected_client_id':selected_client_id,
         'subscription': subscription,
         'company': company
         }
@@ -308,7 +355,8 @@ def administrator_dashboard(request):
         
         'selected_client_id': selected_client_id,
         'selected_company_id': selected_company_id,
-        'selected_subscription_id':selected_subscription_id
+        'selected_subscription_id':selected_subscription_id,
+
     }
     return render(request, 'administrator_dashboard.html', context)
 
@@ -317,18 +365,17 @@ def dashboard(request):
     initial_client_id = clients.first().ClientIdentity if clients else None
     return render(request, 'dashboard.html', {'clients': clients, 'initial_client_id': initial_client_id})
 
-
 def fetch_companies(request):
     selected_client_id = request.GET.get('selected_client_id')
     print("Selected Client ID:", selected_client_id)
-    companies = Company.objects.filter(ClientIdentity=selected_client_id)
+    companies = Company.objects.filter(ClientIdentity=selected_client_id).order_by('CompanyName')
     company_data = [{'name': company.CompanyName, 'id': company.CompanyIdentity} for company in companies]
     return JsonResponse(company_data, safe=False)
 
 def fetch_subscriptions(request):
     selected_company_id = request.GET.get('selected_company_id')
     print("Selected Company ID:", selected_company_id)
-    subscriptions = Subscription.objects.filter(CompanyIdentity=selected_company_id)
+    subscriptions = Subscription.objects.filter(CompanyIdentity=selected_company_id).order_by('-SubscriptionStartDate')
     subscription_data = [{'startdate': subscription.SubscriptionStartDate, 'stopdate': subscription.SubscriptionEndDate, 'subscriptionstatus': subscription.SubscriptionStatus, 'id': subscription.SubscriptionID } for subscription in subscriptions]
     return JsonResponse(subscription_data, safe=False)
 
