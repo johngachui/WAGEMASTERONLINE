@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from datetime import date
+from django.utils import timezone
+from datetime import timedelta
 
 class User(AbstractUser):
     is_administrator = models.BooleanField(default=False)
@@ -9,14 +11,24 @@ class User(AbstractUser):
 
     def is_admin(self):
         return self.is_administrator
+    
+class OneTimePassword(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    otp = models.CharField(max_length=10)
+    created_at = models.DateTimeField(auto_now_add=True)
+    used = models.BooleanField(default=False)
 
+    @property
+    def is_expired(self):
+        return timezone.now() > self.created_at + timedelta(minutes=5)  # OTP expires after 5 minutes
+    
 class Client(models.Model):
     ClientIdentity = models.AutoField(primary_key=True)
     ClientName = models.CharField(max_length=255)
     ClientEmail = models.CharField(max_length=255, null=True)
     ClientTel = models.CharField(max_length=20)
     ClientContactPerson = models.CharField(max_length=255)
-    ClientUserID = models.ForeignKey(User, on_delete=models.CASCADE)
+    ClientUserID = models.OneToOneField(User, on_delete=models.CASCADE)
     class Meta:
         db_table = 'client'
         

@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Company , Subscription, Division, Employee, LeaveBalance, ProcessedLeave, LeaveApplication
 from django.db import IntegrityError
 import logging
-from .models import User, Client, Company, Subscription
-from django.contrib.auth import get_user_model
+from .models import User, Client, Company, Subscription, OneTimePassword
+from django.contrib.auth import get_user_model, update_session_auth_hash,authenticate, login
 from django.core.mail import send_mail, BadHeaderError
 from django.contrib.auth.views import LoginView
 from .forms import ClientForm, CompanyForm, SubscriptionForm
@@ -18,11 +18,19 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.urls import reverse
 from urllib.parse import urlencode
+from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import update_session_auth_hash, backends
+from django.contrib.auth.forms import SetPasswordForm
+
+class NewPasswordForm(SetPasswordForm):
+    # You can add additional fields or methods here if needed
+    pass
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
 #@method_decorator(csrf_exempt, name='dispatch')
-
+@login_required
 def home(request):
     return render(request, 'home.html')
 
@@ -65,22 +73,33 @@ def create_client(request):
         if form.is_valid():
             client = form.save(commit=False)
             username = form.cleaned_data['username']  # Get the entered username
-            
+            email = form.cleaned_data['ClientEmail']  # Get the email from the form
+
             # Check if a user with the same username already exists
             existing_user = User.objects.filter(username=username).exists()
             if existing_user:
                 messages.error(request, 'Username already exists. Please choose a different username.')
                 return render(request, 'create_client.html', {'form': form}) # Redirect back to the same form
-
+            # Generate OTP
+            one_time_password = generate_one_time_password()
             # Create a new user with the entered username
-            user = User.objects.create_user(username=username)
+            user = User.objects.create_user(username=username, email=email, password=one_time_password)
             
+            # Create OTP object
+            OneTimePassword.objects.create(user=user, otp=one_time_password)
+
+            # Send OTP via email
+            send_one_time_password_email(client.ClientEmail, one_time_password)
+
             # Assign the user instance to the ClientUserID field
             client.ClientUserID = user
             
             # Save the user and client objects
             user.save()
             client.save()
+
+            messages.success(request, 'Client account created successfully. An OTP has been sent to the client\'s email.')
+            
             created_client_id = client.pk
             #return redirect('administrator_dashboard')
             url = reverse('administrator_dashboard') + '?selected_client=' + str(created_client_id)
@@ -94,12 +113,70 @@ def create_client(request):
 class UserLoginView(LoginView):
     template_name = 'login.html'
 
+    def form_valid(self, form):
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password')
+
+        # First, check if the password is an OTP
+        try:
+                      
+            otp_record = OneTimePassword.objects.get(user__username=username, otp=password)
+            #pdb.set_trace()
+            if not otp_record.used: # and not otp_record.is_expired:
+                otp_record.used = True
+                otp_record.save()
+                user = otp_record.user
+                user.backend = 'django.contrib.auth.backends.ModelBackend'  # Specify the backend
+                login(self.request, user)  # Log the user in
+                return redirect('set_new_password')  # Redirect to set new password page
+        except OneTimePassword.DoesNotExist:
+            
+            pass  # If it's not an OTP, proceed with regular authentication
+
+        # Regular authentication
+        user = authenticate(self.request, username=username, password=password)
+        if user is not None and user.is_active:
+            login(self.request, user)
+            return super().form_valid(form)
+
+        return self.form_invalid(form)
+    
     def get_success_url(self):
         user = self.request.user
         if user.is_authenticated and user.is_administrator:
             return '/admin/dashboard/'  # Redirect to the administrator dashboard
         else:
             return '/client/dashboard/'  # Redirect to the client dashboard
+        
+def client_dashboard(request):
+    user = request.user
+    if not user.is_authenticated:
+        return redirect('login')
+
+    try:
+        client = Client.objects.get(ClientUserID=user)
+        companies = Company.objects.filter(client=client)  # Adjust the filter based on your model relationships
+        subscriptions = Subscription.objects.filter(client=client)  # Adjust the filter based on your model relationships
+        return render(request, 'client_dashboard.html', {
+            'client': client,
+            'companies': companies,
+            'subscriptions': subscriptions
+        })
+    except Client.DoesNotExist:
+        return render(request, 'error_page.html', {'error': 'Client not found'})
+
+    
+def set_new_password(request):
+    if request.method == 'POST':
+        form = SetPasswordForm(request.user, request.POST)
+        if form.is_valid():
+            form.save()
+            # Redirect to a confirmation page or dashboard
+            return redirect('login')
+    else:
+        form = SetPasswordForm(request.user)
+
+    return render(request, 'set_new_password.html', {'form': form})
 
 def client_list(request):
     clients = Client.objects.all()
@@ -380,7 +457,7 @@ def fetch_subscriptions(request):
     return JsonResponse(subscription_data, safe=False)
 
 def generate_one_time_password():
-    return get_random_string(length=5, allowed_chars='1234567890')
+    return get_random_string(length=10, allowed_chars='1234567890ABCDEFGHIJKLMNOPQRSTUVWQYZ!@<>{}?')
 
 def send_one_time_password_email(client_email, one_time_password):
     subject = 'Your One-Time Password'
