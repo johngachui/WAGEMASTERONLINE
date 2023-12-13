@@ -21,7 +21,8 @@ from wagemaster_online.views import UserLoginView, register, home,administrator_
 from wagemaster_online.views import dashboard, fetch_companies,subscription_create,fetch_subscriptions
 from wagemaster_online.views import client_update,check_username_availability,subscription_update,set_new_password
 from django.contrib.auth import views as auth_views
-from .views import ClientDeleteView,CompanyDeleteView,SubscriptionDeleteView
+from .views import ClientDeleteView,CompanyDeleteView,SubscriptionDeleteView,manage_client_groups,fetch_clients_for_group
+from .views import AdministratorLoginView, ClientLoginView, EmployeeLoginView, SupervisorLoginView
 
 urlpatterns = [
     path('', home, name='home'),
@@ -32,18 +33,23 @@ urlpatterns = [
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('login/', UserLoginView.as_view(), name='login'),
-
+    path('login/administrator/', AdministratorLoginView.as_view(), name='administrator_login'),
+    path('login/client/', ClientLoginView.as_view(), name='client_login'),
+    path('login/employee/', EmployeeLoginView.as_view(), name='employee_login'),
+    path('login/supervisor/', SupervisorLoginView.as_view(), name='supervisor_login'),
     path('set_new_password/', set_new_password, name='set_new_password'),
   
     path('admin/dashboard/', administrator_dashboard, name='administrator_dashboard'),
     path('fetch_companies/', fetch_companies, name='fetch_companies'),
     path('fetch_subscriptions/', fetch_subscriptions, name='fetch_subscriptions'),
-    #path('admin/dashboard/', dashboard, name='dashboard'),
     path('create-client/', create_client, name='create_client'),
     path('client/update/', client_update, name='client_update'),  
     path('check_username_availability/', check_username_availability, name='check_username_availability'),
     path('client-list/', client_list, name='client_list'),
     path('client/dashboard/', client_dashboard, name='client_dashboard'),
+
+    path('manage-client-groups/', manage_client_groups, name='manage_client_groups'),
+    path('fetch_clients_for_group/', fetch_clients_for_group, name='fetch_clients_for_group'),
 
     path('client_delete/', ClientDeleteView.as_view(), name='client_delete'),
     path('company_delete/', CompanyDeleteView.as_view(), name='company_delete'),

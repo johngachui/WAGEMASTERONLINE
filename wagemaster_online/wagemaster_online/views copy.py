@@ -236,62 +236,39 @@ def client_update(request):
     selected_client_id = request.GET.get('selected_client')
     client = get_object_or_404(Client, ClientIdentity=selected_client_id)
     client_groups = ClientGroup.objects.all()
-
-    # Fetch the first user's username
     username = client.users.first().username if client.users.exists() else None
-    client_group_id = client.client_group_id
-
+    
     if request.method == 'POST':
         form = ClientForm(request.POST, instance=client)
         if form.is_valid():
-            updated_client = form.save(commit=False)
-            updated_client.save()
-
-            # Handle the user association
-            new_username = form.cleaned_data['users']
-            print("new_username:", new_username)
-            if new_username != username:
-                # Update the username if it has changed
-                user = client.users.first()
-                user.username = new_username
-                user.save()
-
+            form.save()
             messages.success(request, "Client information successfully updated!")
             return redirect('administrator_dashboard')
     else:
-        # Set the initial values for the form fields
-        initial_data = {
-            'users': username,
-            'client_group': client_group_id
-        }
-        form = ClientForm(instance=client, initial=initial_data)
+        form = ClientForm(instance=client)
+
+    # Assuming you want to display the first user's username
+    
 
     context = {
         'form': form,
         'selected_client_id': selected_client_id,
         'client': client,
-        'username': username,  # Pass the username to the template
-        'client_groups': client_groups,
-        'client_group_id': client_group_id
+        'username': username,
+        'client_groups': client_groups
     }
-    
+
     return render(request, 'client_update.html', context)
+
 
 class ClientDeleteView(View):
     def post(self, request, *args, **kwargs):
         client_id = request.POST.get('client_id')
         client = get_object_or_404(Client, ClientIdentity=client_id)
-
-        # Get the first user associated with the client
-        user = client.users.first()
-
-        # Check if user exists before attempting to delete
-        if user:
-            user.delete()
-
+        user = get_object_or_404(User, id=client.users)
         client.delete()
+        user.delete()
         return JsonResponse({'status': 'success'})
-
     
 class CompanyDeleteView(View):
     def post(self, request, *args, **kwargs):
@@ -571,7 +548,6 @@ def leaveapplication_list(request, employee_id):
     return render(request, 'leaveapplication_list.html', {'leaveapplication': leaveapplication})
 
 def manage_client_groups(request):
-
     groups = ClientGroup.objects.all()  # Get all groups
     form = ClientGroupForm(request.POST or None)
 
@@ -594,11 +570,3 @@ def manage_client_groups(request):
             return redirect('manage_client_groups')
 
     return render(request, 'manage_client_groups.html', {'groups': groups, 'form': form})
-
-def fetch_clients_for_group(request):
-    group_id = request.GET.get('group_id')
-    group = get_object_or_404(ClientGroup, id=group_id)
-    clients = Client.objects.filter(client_group=group).values('ClientIdentity', 'ClientName')
-
-    client_list = list(clients)
-    return JsonResponse({'clients': client_list})

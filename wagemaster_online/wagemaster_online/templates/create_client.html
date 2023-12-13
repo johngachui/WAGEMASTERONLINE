@@ -33,7 +33,7 @@
     {% csrf_token %}
     
     <!-- ClientName -->
-    <div class="form-group row">
+    <div class="form-group row" style ="margin-bottom: 10px;">
       <label for="id_ClientName" class="col-sm-3 col-form-label">
         Client Name:
       </label>
@@ -43,17 +43,17 @@
     </div>
 
     <!-- Username -->
-    <div class="form-group row">
+    <div class="form-group row" style ="margin-bottom: 10px;">
       <label for="id_Username" class="col-sm-3 col-form-label">
         Username:
       </label>
       <div class="col-sm-7">
-        <input type="text" class="form-control" placeholder="Required" id="id_Username" name="{{ form.username.name }}" required pattern="^[a-zA-Z0-9._-]{3,}$" title="At least 3 characters and only letters, numbers, dashes, underscores, and periods are allowed." style="height: 40px;">
+        <input type="text" class="form-control" placeholder="Required" id="id_Username" name="{{ form.users.name }}" required pattern="^[a-zA-Z0-9._-]{3,}$" title="At least 3 characters and only letters, numbers, dashes, underscores, and periods are allowed." style="height: 40px;">
       </div>
     </div>
 
     <!-- ClientEmail -->
-    <div class="form-group row">
+    <div class="form-group row" style ="margin-bottom: 10px;">
       <label for="id_ClientEmail" class="col-sm-3 col-form-label">
         Client Email:
       </label>
@@ -63,7 +63,7 @@
     </div>
 
     <!-- ClientTel -->
-    <div class="form-group row">
+    <div class="form-group row" style ="margin-bottom: 10px;">
       <label for="id_ClientTel" class="col-sm-3 col-form-label">
         Tel:
       </label>
@@ -73,7 +73,7 @@
     </div>
 
     <!-- ClientContactPerson -->
-    <div class="form-group row">
+    <div class="form-group row" style ="margin-bottom: 10px;">
       <label for="id_ClientContactPerson" class="col-sm-3 col-form-label">
         Contact Person:
       </label>
@@ -81,9 +81,24 @@
         <input type="text" class="form-control" placeholder="Required" id="id_ClientContactPerson" name="{{ form.ClientContactPerson.name }}" required minlength="3" maxlength="100" style="height: 40px;">
       </div>
     </div>
-    
-    <a href="{% url 'administrator_dashboard' %}" class="btn btn-danger btn-sm">Back</a>
-    <button type="submit" class="btn btn-primary btn-sm">Create</button>
+
+    <!-- ClientGroup Dropdown -->
+    <div class="form-group row" style="margin-bottom: 10px;">
+      <label for="id_client_group" class="col-sm-3 col-form-label">
+        Client Group:
+      </label>
+      <div class="col-sm-7">
+        <select class="form-control" id="id_client_group" name="{{ form.client_group.name }}">
+          {% for group in client_groups %}
+            <option value="{{ group.id }}">{{ group.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="text-center" style ="margin: 10px;">
+      <button type="submit" class="btn btn-primary btn-sm" style ="margin: 10px;">Create</button>
+    </div>  
   </form>
 
 {% endblock %}

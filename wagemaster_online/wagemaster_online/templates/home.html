@@ -1,17 +1,16 @@
 {% extends 'base-home.html' %}
 
 {% block content %}
-<div class="jumbotron" style = "position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">    
-    <div>
-        <h1 class="display-7">Employee Self Service Setup</h1>
-        <p class="lead">Enable your employees to manage leave from their mobile phones</p>
-        <p class="lead">Setup the service for your company here</p>
+ 
+<div style = "position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    <h2 class="display-7">Employee Self Service Setup</h2>
+    <p class="lead">Enable your employees to manage leave from their mobile phones</p>
+    <p class="lead">Register your company for this service here</p>
 
-        <!-- Add the links to registration and login -->
-        <a href="{% url 'register' %}" class="btn btn-primary">Customer Registration</a>
-        <a href="{% url 'login' %}" class="btn btn-success">Login</a>
+    <!-- Add the links to registration and login -->
+    <a href="{% url 'register' %}" class="btn btn-success">Company Registration</a>
+  
 
-        
-    </div>    
 </div>    
+
 {% endblock %}

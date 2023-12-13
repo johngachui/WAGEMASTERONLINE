@@ -35,7 +35,7 @@
                 Username:
             </label>
             <div class="col-sm-7">
-                <input type="text" class="form-control" placeholder="Required" id="id_Username" name="{{ form.username.name }}" value="{{ username }}" required pattern="^[a-zA-Z0-9._-]{3,}$" title="At least 3 characters and only letters, numbers, dashes, underscores, and periods are allowed." style="height: 40px;">
+                <input type="text" class="form-control" placeholder="Required" id="id_Username" name="users" value="{{ username }}" required pattern="^[a-zA-Z0-9._-]{3,}$" title="At least 3 characters and only letters, numbers, dashes, underscores, and periods are allowed." style="height: 40px;">
             </div>
         </div>
 
@@ -68,7 +68,21 @@
                 <input type="text" class="form-control" placeholder="Required" id="id_ClientContactPerson" name="{{ form.ClientContactPerson.name }}" value="{{ client.ClientContactPerson }}" required minlength="3" maxlength="100" style="height: 40px;">
             </div>
         </div>
-        
+        <!-- ClientGroup Dropdown -->
+        <div class="form-group row">
+            <label for="id_client_group" class="col-sm-3 col-form-label">
+                Client Group:
+            </label>
+            <div class="col-sm-7">
+                <select class="form-control" id="id_client_group" name="client_group">
+                    {% for group in client_groups %}
+                        <option value="{{ group.id }}" {% if group.id == client_group_id %}selected{% endif %}>
+                            {{ group.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
         <a href="{% url 'administrator_dashboard' %}?selected_client={{ selected_client_id }}" class="btn btn-danger btn-sm">Back</a>
         <button type="submit" class="btn btn-primary btn-sm">Update</button>
         

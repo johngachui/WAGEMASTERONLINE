@@ -5,12 +5,20 @@ from django.utils import timezone
 from datetime import timedelta
 
 class User(AbstractUser):
-    is_administrator = models.BooleanField(default=False)
+    ADMINISTRATOR = 1
+    CLIENT = 2
+    SUPERVISOR = 3
+    EMPLOYEE = 4
 
-    # Add any additional fields or methods as needed
+    USER_TYPE_CHOICES = (
+        (ADMINISTRATOR, 'Administrator'),
+        (CLIENT, 'Client'),
+        (SUPERVISOR, 'Supervisor'),
+        (EMPLOYEE, 'Employee'),
+    )
 
-    def is_admin(self):
-        return self.is_administrator
+    user_type = models.IntegerField(choices=USER_TYPE_CHOICES, default=EMPLOYEE)
+
     
 class OneTimePassword(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -22,16 +30,27 @@ class OneTimePassword(models.Model):
     def is_expired(self):
         return timezone.now() > self.created_at + timedelta(minutes=5)  # OTP expires after 5 minutes
     
+class ClientGroup(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = 'client_group'  
+
 class Client(models.Model):
     ClientIdentity = models.AutoField(primary_key=True)
     ClientName = models.CharField(max_length=255)
     ClientEmail = models.CharField(max_length=255, null=True)
     ClientTel = models.CharField(max_length=20)
     ClientContactPerson = models.CharField(max_length=255)
-    ClientUserID = models.OneToOneField(User, on_delete=models.CASCADE)
+    users = models.ManyToManyField(User, related_name='clients')
+    client_group = models.ForeignKey(ClientGroup, on_delete=models.PROTECT, null=True, blank=True)
     class Meta:
         db_table = 'client'
         
+
 class Company(models.Model):
     CompanyIdentity = models.AutoField(primary_key=True, db_column='CompanyIdentity', 
                                        auto_created=True, blank=False, null=False)
@@ -43,6 +62,7 @@ class Company(models.Model):
                                        related_name='company', db_column='ClientIdentity')
     class Meta:
         db_table = 'company'
+        
 
 class Subscription(models.Model):
     SubscriptionID =  models.AutoField(primary_key=True, db_column='SubscriptionID', 
@@ -58,7 +78,7 @@ class Subscription(models.Model):
     SubscriptionStatus = models.TextField(default ="Pending")
     class Meta:
         db_table = 'subscription'
-
+        
 class Division(models.Model):
     DivisionIdentity = models.AutoField(primary_key=True, db_column='DivisionIdentity', 
                                        auto_created=True, blank=False, null=False)
