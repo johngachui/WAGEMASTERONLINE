@@ -6,9 +6,9 @@ from .models import User, Client, Company, Subscription, OneTimePassword,ClientG
 from django.contrib.auth import get_user_model, update_session_auth_hash,authenticate, login
 from django.core.mail import send_mail, BadHeaderError
 from django.contrib.auth.views import LoginView
-from .forms import ClientForm, CompanyForm, SubscriptionForm,ClientGroupForm
+from .forms import ClientForm, CompanyForm, SubscriptionForm,ClientGroupForm,GroupCreationForm
 from django.core.mail import send_mail
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.utils.crypto import get_random_string
 from django.contrib import messages
 import pdb
@@ -19,7 +19,7 @@ from django.views import View
 from django.urls import reverse
 from urllib.parse import urlencode
 from django.utils import timezone
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth import update_session_auth_hash, backends
 from django.contrib.auth.forms import SetPasswordForm
 
@@ -30,6 +30,54 @@ class NewPasswordForm(SetPasswordForm):
 User = get_user_model()
 logger = logging.getLogger(__name__)
 #@method_decorator(csrf_exempt, name='dispatch')
+
+#@permission_required('auth.add_group', raise_exception=True)
+def create_group(request):
+    existing_groups = Group.objects.all()  # Query all existing groups
+
+    if request.method == 'POST':
+        form = GroupCreationForm(request.POST)
+        if form.is_valid():
+            # The form's save method now handles both Group and ExtendedGroup creation
+            form.save()
+            return redirect('create_group')
+        else:
+            print(form.errors)
+    else:
+        form = GroupCreationForm()
+
+    return render(request, 'create_group.html', {'form': form, 'existing_groups': existing_groups})
+
+def fetch_group_details(request):
+    group_id = request.GET.get('group_id')
+    group = Group.objects.get(id=group_id)
+    permissions = list(group.permissions.values_list('id', flat=True))
+    
+    return JsonResponse({
+        'name': group.name,
+        'permissions': permissions
+    })
+
+@csrf_exempt
+@login_required
+def delete_group(request):
+    if request.method == 'POST':
+        group_id = request.POST.get('group_id')
+        try:
+            group = Group.objects.get(id=group_id)
+            if not group.user_set.exists():  # Check if the group is not assigned to any user
+                group.delete()
+                return JsonResponse({'status': 'success'})
+            else:
+                return JsonResponse({'status': 'error', 'error': 'Group is assigned to users and cannot be deleted.'})
+        except Group.DoesNotExist:
+            return JsonResponse({'status': 'error', 'error': 'Group not found.'})
+    return JsonResponse({'status': 'error', 'error': 'Invalid request'})    
+
+def get_group_list(request):
+    groups = Group.objects.values('id', 'name')
+    return JsonResponse({'groups': list(groups)})
+
 @login_required
 def home(request):
     return render(request, 'home.html')
@@ -103,8 +151,6 @@ def create_client(request):
 
     return render(request, 'create_client.html', {'form': form, 'client_groups': client_groups})
 
-
-
 class UserLoginView(LoginView):
     template_name = 'login.html'
 
@@ -147,7 +193,6 @@ class UserLoginView(LoginView):
             return '/supervisor/dashboard/'
         elif user.user_type == User.EMPLOYEE:
             return '/employee/dashboard/'
-
 
 class AdministratorLoginView(UserLoginView):
     template_name = 'administrator_login.html'

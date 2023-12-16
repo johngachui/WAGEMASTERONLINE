@@ -1,13 +1,43 @@
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
-from .models import User, Client, Company, Subscription,ClientGroup
+from .models import User, Client, Company, Subscription,ClientGroup,ExtendedGroup
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import Group, Permission
 
+class GroupCreationForm(forms.ModelForm):
+    permissions = forms.ModelMultipleChoiceField(
+        queryset=Permission.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
+    user_type = forms.ChoiceField(choices=User.USER_TYPE_CHOICES, required=True)  # Use User.USER_TYPE_CHOICES
+    default = forms.BooleanField(required=False)
 
+    class Meta:
+        model = Group
+        fields = ['name', 'permissions', 'user_type', 'default']
+
+    def save(self, commit=True):
+        # Save the Group instance
+        group = super().save(commit=False)
+        if commit:
+            group.save()
+            self.save_m2m()  # Save many-to-many data for the form.
+
+        # Create or update the ExtendedGroup instance
+        extended_group, created = ExtendedGroup.objects.get_or_create(group=group)
+        extended_group.user_type = self.cleaned_data['user_type']
+        extended_group.default = self.cleaned_data['default']
+        if commit:
+            extended_group.save()
+
+        return group
+    
+    
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User
