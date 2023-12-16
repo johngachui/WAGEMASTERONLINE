@@ -21,8 +21,8 @@ from wagemaster_online.views import UserLoginView, register, home,administrator_
 from wagemaster_online.views import dashboard, fetch_companies,subscription_create,fetch_subscriptions
 from wagemaster_online.views import client_update,check_username_availability,subscription_update,set_new_password
 from django.contrib.auth import views as auth_views
-from .views import ClientDeleteView,CompanyDeleteView,SubscriptionDeleteView,manage_client_groups,fetch_clients_for_group
-from .views import AdministratorLoginView, ClientLoginView, EmployeeLoginView, SupervisorLoginView
+from .views import ClientDeleteView,CompanyDeleteView,SubscriptionDeleteView,manage_client_groups,fetch_clients_for_group,delete_group,get_group_list
+from .views import AdministratorLoginView, ClientLoginView, EmployeeLoginView, SupervisorLoginView,create_group,fetch_group_details
 
 urlpatterns = [
     path('', home, name='home'),
@@ -50,6 +50,10 @@ urlpatterns = [
 
     path('manage-client-groups/', manage_client_groups, name='manage_client_groups'),
     path('fetch_clients_for_group/', fetch_clients_for_group, name='fetch_clients_for_group'),
+    path('create_group/', create_group, name='create_group'),
+    path('fetch_group_details/', fetch_group_details, name='fetch_group_details'),
+    path('delete_group/', delete_group, name='delete_group'),
+    path('get_group_list/', get_group_list, name='get_group_list'),
 
     path('client_delete/', ClientDeleteView.as_view(), name='client_delete'),
     path('company_delete/', CompanyDeleteView.as_view(), name='company_delete'),

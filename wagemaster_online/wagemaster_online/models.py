@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group
 from datetime import date
 from django.utils import timezone
 from datetime import timedelta
@@ -19,7 +19,14 @@ class User(AbstractUser):
 
     user_type = models.IntegerField(choices=USER_TYPE_CHOICES, default=EMPLOYEE)
 
-    
+class ExtendedGroup(models.Model):
+    group = models.OneToOneField(Group, on_delete=models.CASCADE)
+    user_type = models.IntegerField(choices=User.USER_TYPE_CHOICES)
+    default = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.group.name
+        
 class OneTimePassword(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     otp = models.CharField(max_length=10)
