@@ -41,8 +41,7 @@ class GroupCreationForm(forms.ModelForm):
             except ExtendedGroup.DoesNotExist:
                 pass
 
-=======
->>>>>>> eb0c99c6c5db06fd174f363996c128d8b733a7ea
+
     def save(self, commit=True):
         # Save the Group instance
         group = super().save(commit=False)
