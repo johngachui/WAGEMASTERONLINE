@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 #@permission_required('auth.add_group', raise_exception=True)
 def create_group(request):
+<<<<<<< HEAD
     print("POST data:", request.POST)  # Add this line to debug POST data
     group_id = request.POST.get('group_id')  # Get the group ID from the POST request
     group_instance = None
@@ -56,11 +57,27 @@ def create_group(request):
         form = GroupCreationForm(instance=group_instance)
 
     existing_groups = Group.objects.all()
+=======
+    existing_groups = Group.objects.all()  # Query all existing groups
+
+    if request.method == 'POST':
+        form = GroupCreationForm(request.POST)
+        if form.is_valid():
+            # The form's save method now handles both Group and ExtendedGroup creation
+            form.save()
+            return redirect('create_group')
+        else:
+            print(form.errors)
+    else:
+        form = GroupCreationForm()
+
+>>>>>>> eb0c99c6c5db06fd174f363996c128d8b733a7ea
     return render(request, 'create_group.html', {'form': form, 'existing_groups': existing_groups})
 
 def fetch_group_details(request):
     group_id = request.GET.get('group_id')
     group = Group.objects.get(id=group_id)
+<<<<<<< HEAD
     extended_group = ExtendedGroup.objects.get(group=group)
 
     # Order permissions by ID
@@ -74,6 +91,15 @@ def fetch_group_details(request):
     })
 
 
+=======
+    permissions = list(group.permissions.values_list('id', flat=True))
+    
+    return JsonResponse({
+        'name': group.name,
+        'permissions': permissions
+    })
+
+>>>>>>> eb0c99c6c5db06fd174f363996c128d8b733a7ea
 @csrf_exempt
 @login_required
 def delete_group(request):

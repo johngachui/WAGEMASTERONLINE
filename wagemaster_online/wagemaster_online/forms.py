@@ -21,6 +21,7 @@ class GroupCreationForm(forms.ModelForm):
         model = Group
         fields = ['name', 'permissions', 'user_type', 'default']
 
+<<<<<<< HEAD
     def __init__(self, *args, **kwargs):
         group_instance = kwargs.pop('instance', None)
         print("Before super call, instance:", group_instance)
@@ -41,6 +42,8 @@ class GroupCreationForm(forms.ModelForm):
             except ExtendedGroup.DoesNotExist:
                 pass
 
+=======
+>>>>>>> eb0c99c6c5db06fd174f363996c128d8b733a7ea
     def save(self, commit=True):
         # Save the Group instance
         group = super().save(commit=False)
@@ -48,6 +51,7 @@ class GroupCreationForm(forms.ModelForm):
             group.save()
             self.save_m2m()  # Save many-to-many data for the form.
 
+<<<<<<< HEAD
         print("user_type from form:", self.cleaned_data['user_type'])
         user_type_value = int(self.cleaned_data['user_type'])
 
@@ -81,6 +85,17 @@ class GroupCreationForm(forms.ModelForm):
         return name
 
  
+=======
+        # Create or update the ExtendedGroup instance
+        extended_group, created = ExtendedGroup.objects.get_or_create(group=group)
+        extended_group.user_type = self.cleaned_data['user_type']
+        extended_group.default = self.cleaned_data['default']
+        if commit:
+            extended_group.save()
+
+        return group
+    
+>>>>>>> eb0c99c6c5db06fd174f363996c128d8b733a7ea
     
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
