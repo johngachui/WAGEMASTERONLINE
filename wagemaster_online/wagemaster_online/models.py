@@ -19,10 +19,20 @@ class User(AbstractUser):
 
     user_type = models.IntegerField(choices=USER_TYPE_CHOICES, default=EMPLOYEE)
 
+class ClientGroup(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = 'client_group'  
+
 class ExtendedGroup(models.Model):
     group = models.OneToOneField(Group, on_delete=models.CASCADE)
     user_type = models.IntegerField(choices=User.USER_TYPE_CHOICES)
     default = models.BooleanField(default=False)
+    client_groups = models.ManyToManyField(ClientGroup, blank=True)
 
     def __str__(self):
         return self.group.name
@@ -36,16 +46,7 @@ class OneTimePassword(models.Model):
     @property
     def is_expired(self):
         return timezone.now() > self.created_at + timedelta(minutes=5)  # OTP expires after 5 minutes
-    
-class ClientGroup(models.Model):
-    name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = 'client_group'  
-
+  
 class Client(models.Model):
     ClientIdentity = models.AutoField(primary_key=True)
     ClientName = models.CharField(max_length=255)

@@ -33,17 +33,27 @@ logger = logging.getLogger(__name__)
 
 #@permission_required('auth.add_group', raise_exception=True)
 def create_group(request):
-<<<<<<< HEAD
-    print("POST data:", request.POST)  # Add this line to debug POST data
+    
     group_id = request.POST.get('group_id')  # Get the group ID from the POST request
     group_instance = None
-    print("group_id:", group_id)  # Debugging line
+    
+    client_groups = ClientGroup.objects.all()
+
+    # If creating/editing an Administrator group, select all client groups by default
+    if request.method == 'POST' and request.POST.get('user_type') == str(User.ADMINISTRATOR):
+        for group in client_groups:
+            group.selected = True
+    elif group_instance and group_instance.user_type == User.ADMINISTRATOR:
+        # Logic to determine which client groups should be selected for an existing group
+        # This depends on your application's specific logic and associations between groups and client groups
+        pass
+
     if group_id:
         try:
             group_instance = Group.objects.get(id=group_id)
-            print("Editing Group:", group_instance)  # Debugging line
+            
         except Group.DoesNotExist:
-            print("Group.DoesNotExist")  # Debugging line
+           
             pass  # Handle the case where the group does not exist
 
     if request.method == 'POST':
@@ -56,28 +66,16 @@ def create_group(request):
     else:
         form = GroupCreationForm(instance=group_instance)
 
+    # Debug line to inspect the client_groups field
+    print("Client Groups in Form:", form.fields['client_groups'].queryset)
+    
     existing_groups = Group.objects.all()
-=======
-    existing_groups = Group.objects.all()  # Query all existing groups
-
-    if request.method == 'POST':
-        form = GroupCreationForm(request.POST)
-        if form.is_valid():
-            # The form's save method now handles both Group and ExtendedGroup creation
-            form.save()
-            return redirect('create_group')
-        else:
-            print(form.errors)
-    else:
-        form = GroupCreationForm()
-
->>>>>>> eb0c99c6c5db06fd174f363996c128d8b733a7ea
-    return render(request, 'create_group.html', {'form': form, 'existing_groups': existing_groups})
+    
+    return render(request, 'create_group.html', {'form': form, 'existing_groups': existing_groups, 'client_groups': client_groups})
 
 def fetch_group_details(request):
     group_id = request.GET.get('group_id')
     group = Group.objects.get(id=group_id)
-<<<<<<< HEAD
     extended_group = ExtendedGroup.objects.get(group=group)
 
     # Order permissions by ID
@@ -91,15 +89,6 @@ def fetch_group_details(request):
     })
 
 
-=======
-    permissions = list(group.permissions.values_list('id', flat=True))
-    
-    return JsonResponse({
-        'name': group.name,
-        'permissions': permissions
-    })
-
->>>>>>> eb0c99c6c5db06fd174f363996c128d8b733a7ea
 @csrf_exempt
 @login_required
 def delete_group(request):
