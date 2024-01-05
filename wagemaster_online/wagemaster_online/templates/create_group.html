@@ -29,41 +29,43 @@
         </div>
     </nav>
     <div class="container-fluid" style="max-height: 90vh; overflow-y: auto;">
-        <div class="row my-custom-row" >
-            <!-- First Column for Listing Existing User Groups -->
-            <div class="col-md-4">
-                <div style = "margin-top: 20px; font-weight:bold;">
-                    <h7>Existing User Groups</h7>
+        <form method="post">
+            {% csrf_token %}
+            <!-- Display form errors -->
+            {% if form.errors %}
+                <div id="error-messages" class="alert alert-danger" style="display: block;">
+                    {{ form.errors }}
                 </div>
-                <div class="overflow-auto p-3 bg-light" style="max-width: 100%; max-height: 80vh;">
-                    <div class="list-group">
-                        {% for group in existing_groups %}
-                            <label class="list-group-item">
-                                <div style = "margin-right: 5px;">
-                                    <input type="radio" name="selected_group" value="{{ group.id }}" onclick="selectGroup('{{ group.id }}')">
-                                    {{ group.name }}
-                                </div>
-                            </label>
-                        {% empty %}
-                            <p>No user groups available.</p>
-                        {% endfor %}
+            {% endif %} 
+            <div class="row my-custom-row" >
+            
+                <!-- First Column for Listing Existing User Groups -->
+                <div class="col-md-4">
+                    <div style = "margin-top: 20px; font-weight:bold;">
+                        <h7>Existing User Groups</h7>
                     </div>
-                </div>    
-            </div>  
-               
-            <!-- Second Column for ClientGroups -->
-            <div class="col-md-5">
-                <div style = "margin-top: 20px; font-weight:bold;">
-                    <h7>Create New User Group</h7>
-                </div>    
-                <form method="post">
-                    {% csrf_token %}
-                    <!-- Display form errors -->
-                    {% if form.errors %}
-                        <div id="error-messages" class="alert alert-danger" style="display: block;">
-                            {{ form.errors }}
+                    <div class="overflow-auto p-3 bg-light" style="max-width: 100%; max-height: 80vh;">
+                        <div class="list-group">
+                            {% for group in existing_groups %}
+                                <label class="list-group-item">
+                                    <div style = "margin-right: 5px;">
+                                        <input type="radio" name="selected_group" value="{{ group.id }}" onclick="selectGroup('{{ group.id }}')">
+                                        {{ group.name }}
+                                    </div>
+                                </label>
+                            {% empty %}
+                                <p>No user groups available.</p>
+                            {% endfor %}
                         </div>
-                    {% endif %} 
+                    </div>    
+                </div>  
+                
+                <!-- Second Column for ClientGroups -->
+                <div class="col-md-5">
+                    <div style = "margin-top: 20px; font-weight:bold;">
+                        <h7>Create New User Group</h7>
+                    </div>    
+                    
                     <!-- End Display form errors -->
                     <!-- Add a hidden input field inside your form to deal with edits-->
                     <input type="hidden" id="id_group_id" name="group_id" value="">
@@ -110,14 +112,14 @@
                     </div>  
                     <div class="overflow-auto p-3 bg-light" style="max-width: 100%; max-height: 45vh; margin-bottom: 10px ;">
                         <div class="permissions-container mb-3" >
-                             <!-- Loop through permissions fields  -->
-                             {% for field in form.permissions %}
+                            <!-- Loop through permissions fields  -->
+                            {% for field in form.permissions %}
                                 <div class="form-check">
                                     {{ field }}
                                     {{ field.label_tag }}
                                 </div>
-                             {% endfor %}
-                             
+                            {% endfor %}
+                            
                         </div>
                     </div>    
                     <!-- Add this button inside your form -->
@@ -125,23 +127,24 @@
 
                     <button type="submit" class="btn btn-primary">Save Group</button>
                     <button type="button" class="btn btn-danger" id="deleteGroupBtn">Delete Group</button>
-                </form>  
-            </div>
-            <!-- Third Column for Client Groups -->
-            <div class="col-md-3" id="client-groups-column">
-                <div style="margin-top: 20px; font-weight:bold;">
-                    <h7>Client Groups</h7>
+                    
                 </div>
-                <div class="overflow-auto p-3 bg-light" style="max-width: 100%; max-height: 80vh;">
-                    {% for field in form.client_groups %}
-                        <div class="form-check">
-                            {{ field }}
-                            {{ field.label_tag }}
-                        </div>
-                    {% endfor %}
+                <!-- Third Column for Client Groups -->
+                <div class="col-md-3" id="client-groups-column">
+                    <div style="margin-top: 20px; font-weight:bold;">
+                        <h7>Client Groups</h7>
+                    </div>
+                    <div class="overflow-auto p-3 bg-light" style="max-width: 100%; max-height: 80vh;">
+                        {% for field in form.client_groups %}
+                            <div class="form-check">
+                                {{ field }}
+                                {{ field.label_tag }}
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
-         </div>        
+        </form>          
     </div> 
     <script>
         function selectGroup(groupId) {
@@ -152,16 +155,25 @@
                 data: {'group_id': groupId},
                 success: function(response) {
                     // Populate the form with the group's details
-                    $('input[type=checkbox]').prop('checked', false);
                     $('#id_group_id').val(groupId);  // Set the group ID for edits
                     $('#id_name').val(response.name);
                     $('#id_user_type').val(response.user_type);
                     $('#id_default').prop('checked', response.default);
-    
+        
+                    // Set permissions
+                    $('input[name="permissions"]').prop('checked', false); // Uncheck all first
                     response.permissions.forEach(function(permissionId) {
-                        $('#id_permissions_' + (permissionId-1)).prop('checked', true);
+                        $('input[name="permissions"][value="' + permissionId + '"]').prop('checked', true);
                     });
-    
+        
+                    // Set client groups
+                    $('input[name="client_groups"]').prop('checked', false); // Uncheck all first
+                    if (response.client_groups && response.client_groups.length > 0) {
+                        response.client_groups.forEach(function(clientGroupId) {
+                            $('input[name="client_groups"][value="' + clientGroupId + '"]').prop('checked', true);
+                        });
+                    }
+        
                     toggleClientGroupsDisplay(); // Adjust client groups display based on user type
                 },
                 error: function(xhr, status, error) {
@@ -169,6 +181,8 @@
                 }
             });
         }
+        
+        
     
         document.getElementById('deleteGroupBtn').addEventListener('click', function() {
             var selectedGroupId = $('input[name="selected_group"]:checked').val();

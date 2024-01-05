@@ -33,7 +33,7 @@ class GroupCreationForm(forms.ModelForm):
 
         self.fields['permissions'].queryset = Permission.objects.all().order_by('id')
         # Always add client_groups field, but conditionally populate it
-        self.fields['client_groups'].queryset = ClientGroup.objects.all()
+        self.fields['client_groups'].queryset = ClientGroup.objects.all().order_by('id')
 
         extended_group = None
         if group_instance:
@@ -56,8 +56,7 @@ class GroupCreationForm(forms.ModelForm):
             # For example, if you want to show all client groups for a new 'Administrator' type group
             user_type = self.data.get('user_type', User.ADMINISTRATOR)  # Default to Administrator
             if user_type == User.ADMINISTRATOR:
-                self.fields['client_groups'].queryset = ClientGroup.objects.all()
-
+                self.fields['client_groups'].queryset = ClientGroup.objects.all().order_by('id')
         
     def save(self, commit=True):
         group = super().save(commit=False)

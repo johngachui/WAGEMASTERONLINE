@@ -22,6 +22,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth import update_session_auth_hash, backends
 from django.contrib.auth.forms import SetPasswordForm
+from django.core.exceptions import ObjectDoesNotExist
 
 class NewPasswordForm(SetPasswordForm):
     # You can add additional fields or methods here if needed
@@ -33,30 +34,11 @@ logger = logging.getLogger(__name__)
 
 #@permission_required('auth.add_group', raise_exception=True)
 def create_group(request):
-    
-    group_id = request.POST.get('group_id')  # Get the group ID from the POST request
-    group_instance = None
-    
-    client_groups = ClientGroup.objects.all()
-
-    # If creating/editing an Administrator group, select all client groups by default
-    if request.method == 'POST' and request.POST.get('user_type') == str(User.ADMINISTRATOR):
-        for group in client_groups:
-            group.selected = True
-    elif group_instance and group_instance.user_type == User.ADMINISTRATOR:
-        # Logic to determine which client groups should be selected for an existing group
-        # This depends on your application's specific logic and associations between groups and client groups
-        pass
-
-    if group_id:
-        try:
-            group_instance = Group.objects.get(id=group_id)
-            
-        except Group.DoesNotExist:
-           
-            pass  # Handle the case where the group does not exist
+    group_id = request.POST.get('group_id')
+    group_instance = get_object_or_404(Group, id=group_id) if group_id else None
 
     if request.method == 'POST':
+        print("Received POST data:", request.POST)
         form = GroupCreationForm(request.POST, instance=group_instance)
         if form.is_valid():
             form.save()
@@ -66,28 +48,33 @@ def create_group(request):
     else:
         form = GroupCreationForm(instance=group_instance)
 
-    # Debug line to inspect the client_groups field
-    print("Client Groups in Form:", form.fields['client_groups'].queryset)
-    
     existing_groups = Group.objects.all()
-    
-    return render(request, 'create_group.html', {'form': form, 'existing_groups': existing_groups, 'client_groups': client_groups})
+    return render(request, 'create_group.html', {'form': form, 'existing_groups': existing_groups})
+
 
 def fetch_group_details(request):
     group_id = request.GET.get('group_id')
-    group = Group.objects.get(id=group_id)
-    extended_group = ExtendedGroup.objects.get(group=group)
+    try:
+        group = Group.objects.get(id=group_id)
+        # Assuming ExtendedGroup has a ManyToMany field to ClientGroup named 'client_groups'
+        extended_group = ExtendedGroup.objects.get(group=group)
 
-    # Order permissions by ID
-    permissions = list(group.permissions.order_by('id').values_list('id', flat=True))
-    
-    return JsonResponse({
-        'name': group.name,
-        'permissions': permissions,
-        'user_type': extended_group.user_type,
-        'default': extended_group.default
-    })
+        # Get the permissions and client groups associated with the group
+        permissions = list(group.permissions.values_list('id', flat=True))
+        client_groups = list(extended_group.client_groups.order_by('id').values_list('id', flat=True))
 
+        # Prepare the response data
+        response_data = {
+            'name': group.name,
+            'user_type': extended_group.user_type,
+            'default': extended_group.default,
+            'permissions': permissions,
+            'client_groups': client_groups,
+        }
+        return JsonResponse(response_data)
+
+    except ObjectDoesNotExist:
+        return JsonResponse({'error': 'Group not found'}, status=404)
 
 @csrf_exempt
 @login_required
