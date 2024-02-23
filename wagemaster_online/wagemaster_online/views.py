@@ -96,7 +96,7 @@ def get_group_list(request):
     groups = Group.objects.values('id', 'name')
     return JsonResponse({'groups': list(groups)})
 
-@login_required
+#@login_required
 def home(request):
     return render(request, 'home.html')
 
@@ -562,6 +562,49 @@ def administrator_dashboard(request):
 
     }
     return render(request, 'administrator_dashboard.html', context)
+
+def client_dashboard(request):
+    user = request.user
+    if not user.is_authenticated:
+        # Redirect to login page if the user is not authenticated
+        return redirect('login')
+
+    # Fetch the clients associated with the logged-in user
+    clients = user.clients.all()
+
+    if not clients.exists():
+        # Handle the case where the user is not associated with any clients
+        # Redirect or display an appropriate message
+        return redirect('some_other_view')
+
+    # For simplicity, let's assume we're dealing with the first associated client
+    client = clients.first()
+
+    # Filter other data based on the selected client
+    companies = Company.objects.filter(ClientIdentity=client)
+    subscriptions = Subscription.objects.filter(CompanyIdentity__in=companies)
+    divisions = Division.objects.filter(CompanyIdentity__in=companies)
+    employees = Employee.objects.filter(CompanyIdentity__in=companies)
+
+    client_form = ClientForm()
+    company_form = CompanyForm()
+    subscription_form = SubscriptionForm()
+
+    context = {
+        'companies': companies,
+        'clients': clients,  # Include all clients associated with the user
+        'subscriptions': subscriptions,
+        'divisions': divisions,
+        'employees': employees,
+
+        'client_form': client_form,
+        'company_form': company_form,
+        'subscription_form': subscription_form,
+
+        'selected_client_id': client.ClientIdentity,  # Automatically select the first associated client
+    }
+    return render(request, 'client_dashboard.html', context)
+
 
 def dashboard(request):
     clients = Client.objects.all()

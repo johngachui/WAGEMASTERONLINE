@@ -77,15 +77,7 @@
         <input type="number" required value=10 class="form-control" placeholder="Required" id="id_Maximum_Employees" name="{{ form.Maximum_Employees.name }}" style="height: 40px;">
       </div>
     </div>
-    <!-- SubscriptionKey -->
-    <div class="form-group row">
-      <label for="id_SubscriptionKey" class="col-sm-3 col-form-label">
-        Subscription Key:
-      </label>
-      <div class="col-sm-7">
-        <input type="text" required value="n/a" class="form-control" placeholder="Required" id="id_SubscriptionKey" name="{{ form.SubscriptionKey.name }}" style="height: 40px;">
-      </div>
-    </div>
+    
     <div class="form-group row">
       <div class="col-sm-10 offset-sm-2" style="margin-top: 20px;">
         <a href="{% url 'administrator_dashboard' %}?selected_client={{ client.ClientIdentity }}&selected_company={{ selected_company_id }}&selected_subscription={{ selected_subscription_id }}" class="btn btn-danger btn-sm">Back</a>

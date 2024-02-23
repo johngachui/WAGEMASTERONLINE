@@ -45,7 +45,7 @@ class OneTimePassword(models.Model):
 
     @property
     def is_expired(self):
-        return timezone.now() > self.created_at + timedelta(minutes=5)  # OTP expires after 5 minutes
+        return timezone.now() > self.created_at + timedelta(minutes=1440)  # OTP expires after 1 day
   
 class Client(models.Model):
     ClientIdentity = models.AutoField(primary_key=True)
@@ -62,10 +62,11 @@ class Client(models.Model):
 class Company(models.Model):
     CompanyIdentity = models.AutoField(primary_key=True, db_column='CompanyIdentity', 
                                        auto_created=True, blank=False, null=False)
-    CompanyName = models.TextField()
-    CompanyEmail = models.TextField()
-    CompanyTel = models.TextField()
+    CompanyName = models.TextField(max_length=255)
+    CompanyEmail = models.TextField(max_length=255)
+    CompanyTel = models.TextField(max_length=255)
     CompanyContactPerson = models.TextField()
+    CompanyKey = models.TextField(default ="n/a")
     ClientIdentity = models.ForeignKey(Client, on_delete=models.CASCADE,
                                        related_name='company', db_column='ClientIdentity')
     class Meta:
@@ -82,7 +83,6 @@ class Subscription(models.Model):
     SubscriptionEndDate = models.DateField(default=date(2022, 1, 1))
     SubscriptionActionDate = models.DateField(default=date(2022, 1, 1))
     Maximum_Employees = models.IntegerField(default=10)
-    SubscriptionKey = models.TextField(default ="n/a")
     SubscriptionStatus = models.TextField(default ="Pending")
     class Meta:
         db_table = 'subscription'
@@ -96,6 +96,7 @@ class Division(models.Model):
         to_field='CompanyIdentity'
     )
     DivisionName = models.TextField()
+    DivisionID = models.TextField(default ="n/a")
     class Meta:
         db_table = 'division'
 

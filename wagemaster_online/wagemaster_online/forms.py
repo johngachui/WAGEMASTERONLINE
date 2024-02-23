@@ -131,7 +131,7 @@ class CompanyForm(forms.ModelForm):
 
     class Meta:
         model = Company
-        fields = ['CompanyName', 'CompanyEmail', 'CompanyTel', 'CompanyContactPerson', 'ClientIdentity']
+        fields = ['CompanyName', 'CompanyEmail', 'CompanyTel', 'CompanyContactPerson', 'ClientIdentity', 'CompanyKey']
         widgets = {'ClientIdentity': forms.HiddenInput()}
 
 class SubscriptionForm(forms.ModelForm):
@@ -141,7 +141,7 @@ class SubscriptionForm(forms.ModelForm):
 
     class Meta:
         model = Subscription
-        fields = ['SubscriptionID', 'SubscriptionStartDate', 'SubscriptionEndDate', 'SubscriptionStatus','SubscriptionActionDate','Maximum_Employees', 'SubscriptionKey', 'CompanyIdentity']
+        fields = ['SubscriptionID', 'SubscriptionStartDate', 'SubscriptionEndDate', 'SubscriptionStatus','SubscriptionActionDate','Maximum_Employees', 'CompanyIdentity']
         widgets = {'CompanyIdentity': forms.HiddenInput()}
        
 
