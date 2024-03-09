@@ -23,6 +23,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth import update_session_auth_hash, backends
 from django.contrib.auth.forms import SetPasswordForm
 from django.core.exceptions import ObjectDoesNotExist
+from .utils import compute_unique_company_key  # Make sure to have this function implemented as shown earlier
 
 class NewPasswordForm(SetPasswordForm):
     # You can add additional fields or methods here if needed
@@ -96,7 +97,6 @@ def get_group_list(request):
     groups = Group.objects.values('id', 'name')
     return JsonResponse({'groups': list(groups)})
 
-#@login_required
 def home(request):
     return render(request, 'home.html')
 
@@ -409,6 +409,10 @@ def company_create(request):
     if request.method == 'POST':
         form = CompanyForm(request.POST, initial={'ClientIdentity': client})
         if form.is_valid():
+            company = form.save(commit=False)
+            company_name = form.cleaned_data['CompanyName']
+            # Generate the CompanyKey using the hashing function
+            company.CompanyKey = compute_unique_company_key(company_name)
             company = form.save()
 
             # Get the created company ID
@@ -441,6 +445,11 @@ def company_update(request):
         # Initialize the form with the submitted data and the existing company instance
         form = CompanyForm(request.POST, instance=company)
         if form.is_valid():
+            company = form.save(commit=False)
+            # Regenerate the CompanyKey if the company name has changed
+            if 'CompanyName' in form.changed_data:
+                company_name = form.cleaned_data['CompanyName']
+                company.CompanyKey = compute_unique_company_key(company_name)
             # Save the updated company object
             company = form.save()
 
