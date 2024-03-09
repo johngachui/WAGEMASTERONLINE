@@ -67,6 +67,7 @@ class Company(models.Model):
     CompanyTel = models.TextField(max_length=255)
     CompanyContactPerson = models.TextField()
     CompanyKey = models.TextField(default ="n/a")
+    needs_sync = models.BooleanField(default=True)
     ClientIdentity = models.ForeignKey(Client, on_delete=models.CASCADE,
                                        related_name='company', db_column='ClientIdentity')
     class Meta:
@@ -84,6 +85,7 @@ class Subscription(models.Model):
     SubscriptionActionDate = models.DateField(default=date(2022, 1, 1))
     Maximum_Employees = models.IntegerField(default=10)
     SubscriptionStatus = models.TextField(default ="Pending")
+    CompanyKey = models.TextField(default ="n/a")
     class Meta:
         db_table = 'subscription'
         
@@ -96,7 +98,8 @@ class Division(models.Model):
         to_field='CompanyIdentity'
     )
     DivisionName = models.TextField()
-    DivisionID = models.TextField(default ="n/a")
+    CompanyKey = models.TextField(default ="n/a")
+    DivisionKey = models.TextField(default ="n/a")
     class Meta:
         db_table = 'division'
 
@@ -118,6 +121,8 @@ class Employee(models.Model):
     StaffIDNo = models.TextField()
     Email = models.TextField()
     Employed = models.BooleanField()
+    EmployeeKey = models.TextField(default ="n/a")
+    needs_sync = models.BooleanField(default=True)
     class Meta:
         db_table = 'employee'
 
@@ -140,6 +145,8 @@ class LeaveBalance(models.Model):
     MaternityCfwd = models.DecimalField(max_digits=10, decimal_places=2)
     SickFull = models.DecimalField(max_digits=10, decimal_places=2)
     SickHalf = models.DecimalField(max_digits=10, decimal_places=2)
+    EmployeeKey = models.TextField(default ="n/a")
+    needs_sync = models.BooleanField(default=True)
     class Meta:
         db_table = 'leavebalance'
 
@@ -156,6 +163,8 @@ class ProcessedLeave(models.Model):
     Approved = models.BooleanField()
     NotApproved= models.BooleanField()
     Taken = models.BooleanField()
+    EmployeeKey = models.TextField(default ="n/a")
+    needs_sync = models.BooleanField(default=True)
     class Meta:
         db_table = 'processedleave'
 
@@ -169,8 +178,16 @@ class LeaveApplication(models.Model):
     LeaveType= models.TextField()
     StartDate = models.DateField()
     StopDate = models.DateField()
+    EmployeeKey = models.TextField(default ="n/a")
+    needs_sync = models.BooleanField(default=True)
     class Meta:
         db_table = 'leaveapplication'
 
+class SyncTable(models.Model):
+    table_name = models.CharField(max_length=255, unique=True)
+    last_synced = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.table_name
 
 
