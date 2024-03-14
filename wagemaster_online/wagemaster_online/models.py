@@ -50,7 +50,7 @@ class OneTimePassword(models.Model):
 class Client(models.Model):
     ClientIdentity = models.AutoField(primary_key=True)
     ClientName = models.CharField(max_length=255)
-    ClientEmail = models.CharField(max_length=255, null=True)
+    ClientEmail = models.EmailField()
     ClientTel = models.CharField(max_length=20)
     ClientContactPerson = models.CharField(max_length=255)
     users = models.ManyToManyField(User, related_name='clients')
@@ -63,7 +63,7 @@ class Company(models.Model):
     CompanyIdentity = models.AutoField(primary_key=True, db_column='CompanyIdentity', 
                                        auto_created=True, blank=False, null=False)
     CompanyName = models.TextField(max_length=255)
-    CompanyEmail = models.TextField(max_length=255)
+    CompanyEmail = models.EmailField()
     CompanyTel = models.TextField(max_length=255)
     CompanyContactPerson = models.TextField()
     CompanyKey = models.TextField(default ="n/a")
@@ -97,7 +97,7 @@ class Division(models.Model):
         on_delete=models.CASCADE,
         to_field='CompanyIdentity'
     )
-    DivisionName = models.TextField()
+    DivisionName = models.CharField(max_length=255)
     CompanyKey = models.TextField(default ="n/a")
     DivisionKey = models.TextField(default ="n/a")
     class Meta:
@@ -106,6 +106,7 @@ class Division(models.Model):
 class Employee(models.Model):
     StaffIdentity = models.AutoField(primary_key=True, db_column='StaffIdentity', 
                                        auto_created=True, blank=False, null=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='employee_profile')
     CompanyIdentity = models.ForeignKey(
         Company,
         on_delete=models.CASCADE,
@@ -116,15 +117,34 @@ class Employee(models.Model):
         on_delete=models.CASCADE,
         to_field='DivisionIdentity'
     )
-    StaffNo = models.TextField()   
-    StaffName = models.TextField()
-    StaffIDNo = models.TextField()
-    Email = models.TextField()
+    StaffNo = models.CharField(max_length=255)  
+    StaffName = models.CharField(max_length=255)
+    StaffIDNo = models.CharField(max_length=255)
+    Email = models.EmailField()
     Employed = models.BooleanField()
     EmployeeKey = models.TextField(default ="n/a")
     needs_sync = models.BooleanField(default=True)
     class Meta:
         db_table = 'employee'
+
+class Supervisor(models.Model):
+    SupervisorIdentity = models.AutoField(primary_key=True, db_column='SupervisorIdentity', 
+                                          auto_created=True, blank=False, null=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='supervisor_profile')
+    client = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE,
+        related_name='supervisors'
+    )
+    SupervisorName = models.CharField(max_length=255)
+    Email = models.EmailField()
+    SupervisorTel = models.TextField(max_length=255)
+    employees = models.ManyToManyField('Employee', related_name='supervisors')
+
+    class Meta:
+        db_table = 'supervisor'
+
+
 
 class LeaveBalance(models.Model):
     StaffIdentity = models.ForeignKey(

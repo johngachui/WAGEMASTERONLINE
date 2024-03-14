@@ -1,6 +1,6 @@
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
-from .models import User, Client, Company, Subscription,ClientGroup,ExtendedGroup
+from .models import User, Client, Company, Subscription,ClientGroup,ExtendedGroup,Supervisor
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from django.shortcuts import render, redirect
@@ -133,6 +133,18 @@ class CompanyForm(forms.ModelForm):
         model = Company
         fields = ['CompanyName', 'CompanyEmail', 'CompanyTel', 'CompanyContactPerson', 'ClientIdentity', 'CompanyKey']
         widgets = {'ClientIdentity': forms.HiddenInput()}
+
+class SupervisorForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Assuming you want to disable the client field to prevent users from manually changing it
+        self.fields['client'].disabled = True
+
+    class Meta:
+        model = Supervisor
+        fields = ['SupervisorName', 'Email', 'SupervisorTel', 'client']
+        widgets = {'client': forms.HiddenInput()}
+
 
 class SubscriptionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):

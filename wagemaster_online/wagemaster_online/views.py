@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Company , Subscription, Division, Employee, LeaveBalance, ProcessedLeave, LeaveApplication
+from .models import Company , Subscription, Division, Employee, LeaveBalance, ProcessedLeave, LeaveApplication, Supervisor
 from django.db import IntegrityError
 import logging
 from .models import User, Client, Company, Subscription, OneTimePassword,ClientGroup,ExtendedGroup
 from django.contrib.auth import get_user_model, update_session_auth_hash,authenticate, login
 from django.core.mail import send_mail, BadHeaderError
 from django.contrib.auth.views import LoginView
-from .forms import ClientForm, CompanyForm, SubscriptionForm,ClientGroupForm,GroupCreationForm
+from .forms import ClientForm, CompanyForm, SubscriptionForm,ClientGroupForm,GroupCreationForm,SupervisorForm
 from django.core.mail import send_mail
 from django.contrib.auth.models import User, Group
 from django.utils.crypto import get_random_string
@@ -595,6 +595,9 @@ def client_dashboard(request):
     divisions = Division.objects.filter(CompanyIdentity__in=companies)
     employees = Employee.objects.filter(CompanyIdentity__in=companies)
 
+    # Fetch supervisors related to the client
+    supervisors = Supervisor.objects.filter(client=client)  # Adjust the filter as per your model's relationship
+
     client_form = ClientForm()
     company_form = CompanyForm()
     subscription_form = SubscriptionForm()
@@ -605,7 +608,7 @@ def client_dashboard(request):
         'subscriptions': subscriptions,
         'divisions': divisions,
         'employees': employees,
-
+        'supervisors': supervisors,  # Add supervisors to the context
         'client_form': client_form,
         'company_form': company_form,
         'subscription_form': subscription_form,
@@ -717,3 +720,22 @@ def fetch_clients_for_group(request):
 
     client_list = list(clients)
     return JsonResponse({'clients': client_list})
+
+@login_required
+def create_supervisor(request):
+    selected_client_id = request.GET.get('selected_client')
+    client = get_object_or_404(Client, ClientIdentity=selected_client_id)
+    
+    if request.method == 'POST':
+        form = SupervisorForm(request.POST)
+        if form.is_valid():
+            supervisor = form.save(commit=False)
+            supervisor.client = client
+            supervisor.user = request.user  # Assuming the supervisor will be linked to the user creating it
+            supervisor.save()
+            # Redirect to a new URL, for example, the client dashboard
+            return redirect('client_dashboard')
+    else:
+        form = SupervisorForm()
+
+    return render(request, 'supervisor_create.html', {'form': form, 'client': client})
