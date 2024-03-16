@@ -130,17 +130,19 @@ class Employee(models.Model):
 class Supervisor(models.Model):
     SupervisorIdentity = models.AutoField(primary_key=True, db_column='SupervisorIdentity', 
                                           auto_created=True, blank=False, null=False)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='supervisor_profile')
-    client = models.ForeignKey(
-        Client,
-        on_delete=models.CASCADE,
-        related_name='supervisors'
-    )
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='supervisor')
+    ClientIdentity = models.ForeignKey(Client, on_delete=models.CASCADE,
+                                       related_name='supervisor', db_column='ClientIdentity')
     SupervisorName = models.CharField(max_length=255)
     Email = models.EmailField()
     SupervisorTel = models.TextField(max_length=255)
     employees = models.ManyToManyField('Employee', related_name='supervisors')
 
+    def delete(self, *args, **kwargs):
+        if self.user:
+            self.user.delete()
+        super(Supervisor, self).delete(*args, **kwargs)
+        
     class Meta:
         db_table = 'supervisor'
 

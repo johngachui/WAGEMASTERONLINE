@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Client Dashboard</title>
+    <title>Supervisor Dashboard</title>
     <style>
         .logout-btn {
             padding: 4px 12px;
@@ -237,7 +237,7 @@
           <span class="navbar-brand text-white bg-info h1" style="font-weight:bold;">Wagemaster Online</span>
   
           <!-- Centered Text -->
-          <span class="navbar-text text-white bg-info h5 my-auto" style="font-weight:bold;">Client Dashboard</span>
+          <span class="navbar-text text-white bg-info h5 my-auto" style="font-weight:bold;">Supervisor Dashboard</span>
           
           <!-- Logout Button -->
           <ul class="nav">
@@ -251,24 +251,7 @@
     <div class="container-fluid" style="max-height: 100vh; overflow-y: auto;">
         <div class="row">
             <div class="col-sm-4">
-                <!-- Client List -->
-                <div style = "margin-top: 20px; font-weight:bold;">
-                  <h7>Clients</h7>
-                </div>
-                <div class="overflow-auto p-3 bg-light" style="max-width: 90%; max-height: 90%px; margin-top: -10px;">
-                    {% csrf_token %}
-                    <ul class="list-unstyled">
-                        {% for client in clients %}
-                            <li>
-                                <input type="radio" name="selected_client" value="{{ client.ClientIdentity }}"
-                                    {% if client.ClientIdentity == initial_client_id %}checked{% endif %}>
-                                {{ client.ClientName }}
-                            </li>
-                        {% empty %}
-                            <li>No clients available.</li>
-                        {% endfor %}
-                    </ul>
-                </div>
+                
                 <div style="margin-top: 20px; font-weight:bold;">
                   <h7>Supervisors</h7>
                 </div>
@@ -284,20 +267,6 @@
                         {% endfor %}
                     </ul>
                 </div>
-                <!-- Buttons for Supervisors -->
-                <div>
-                  <button type="button" data-form="supervisor_create" data-action-url="{% url 'supervisor_create' %}?selected_client={{ client.ClientIdentity }}" class="btn btn-primary btn-sm" style="margin-top: 10px;">New Supervisor</button>
-                </div>
-                <div> 
-                  <!-- Create Supervisors Form -->
-                  <form method="post" action="{% url 'supervisor_create' %}" id="supervisor_create">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <button type="submit" hidden>Create</button>
-                  </form>
-                </div>  
-            </div>
-            <div class="col-sm-4">
                 <!-- Company List -->
                 <div style = "margin-top: 20px; font-weight:bold;">
                   <h7>Companies</h7>
@@ -307,22 +276,6 @@
                         <!-- The company list will be dynamically populated here -->
                     </ul>
                 </div>
-                
-                <!-- Subscription List -->
-                <div style = "margin-top: 20px; font-weight:bold;">
-                  <h7>Subscriptions</h7>
-                </div>
-                <div class="overflow-auto p-3 bg-light" style="max-width: 90%; max-height: 25%;">
-                  <div style="font-size:14px;">
-                    &emsp;&nbsp;From&emsp;&emsp;&emsp;&emsp;To&emsp;&emsp;&emsp;&emsp;&emsp;Status
-                    
-                    <ul class="list-unstyled" id="subscription-list">
-                        <!-- The subscription list will be dynamically populated here -->
-                    </ul>
-                  </div>
-                </div>
-            </div> <!-- 2nd col -->  
-            <div class="col-sm-4">
                 <!-- Divisions / Databases list -->
                 <div style = "margin-top: 20px; font-weight:bold;">
                   <h7>Divisions / Databases</h7>
@@ -339,6 +292,9 @@
                     </ul>
                   </div>
                 </div>
+            </div>
+            <div class="col-sm-4">
+                
                 <!-- Employees list -->
                 <div style = "margin-top: 20px; font-weight:bold;">
                   <h7>Employees</h7>
@@ -356,7 +312,7 @@
                     </ul>
                   </div>
                 </div>
-            </div> <!-- 3rd col -->
+            </div> <!-- 2nd col -->
         </div> <!-- row -->
     </div> <!-- container -->
 </body>

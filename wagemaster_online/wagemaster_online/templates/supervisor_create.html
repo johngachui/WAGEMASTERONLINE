@@ -4,10 +4,9 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Create Supervisor</h2>
   </div>
-  <form method="post" action="{% url 'supervisor_create' %}?selected_client={{ selected_client_id }}">
+  <form method="post" action="{% url 'supervisor_create' %}?selected_client={{ selected_client_id}}">
     {% csrf_token %}
-    <input type="hidden" name="selected_client" value="{{ selected_client_id }}">
-    
+        
     <!-- SupervisorName -->
     <div class="form-group row">
       <label for="id_SupervisorName" class="col-sm-3 col-form-label">
@@ -26,6 +25,7 @@
         <input type="text" class="form-control" placeholder="Required" id="id_Email" name="{{ form.Email.name }}" style="height: 40px;">
       </div>
     </div>
+    
     <!-- SupervisorTel -->
     <div class="form-group row">
       <label for="id_SupervisorTel" class="col-sm-3 col-form-label">

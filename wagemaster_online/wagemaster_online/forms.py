@@ -135,16 +135,11 @@ class CompanyForm(forms.ModelForm):
         widgets = {'ClientIdentity': forms.HiddenInput()}
 
 class SupervisorForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Assuming you want to disable the client field to prevent users from manually changing it
-        self.fields['client'].disabled = True
-
+    
     class Meta:
         model = Supervisor
-        fields = ['SupervisorName', 'Email', 'SupervisorTel', 'client']
-        widgets = {'client': forms.HiddenInput()}
-
+        fields = ['SupervisorName', 'Email', 'SupervisorTel']
+        
 
 class SubscriptionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):

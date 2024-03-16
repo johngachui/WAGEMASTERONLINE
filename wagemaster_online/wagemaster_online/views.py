@@ -205,7 +205,6 @@ class UserLoginView(LoginView):
         if user.user_type == User.ADMINISTRATOR:
             return '/admin/dashboard/'
         elif user.user_type == User.CLIENT:
-            
             return '/client/dashboard/'
         elif user.user_type == User.SUPERVISOR:
             return '/supervisor/dashboard/'
@@ -245,11 +244,11 @@ class ClientLoginView(UserLoginView):
             client = clients.first()
             return super_response  # Proceed with the base implementation's response
         else:
-            # If not an administrator, handle accordingly (e.g., redirect to a different page or show an error)
+            # If not an client, handle accordingly (e.g., redirect to a different page or show an error)
             return self.form_invalid(form)
 
     def get_success_url(self):
-        # Override this method to redirect administrators to their specific dashboard
+        # Override this method to redirect clients to their specific dashboard
         return '/client/dashboard/'
     
 class EmployeeLoginView(UserLoginView):
@@ -538,7 +537,8 @@ def company_delete(request, company_id):
         company.delete()
         return redirect('company_list')
     return render(request, 'company_delete.html', {'company': company})
-    
+
+@login_required    
 def administrator_dashboard(request):
     selected_client_id = request.GET.get('selected_client')
     selected_company_id = request.GET.get('selected_company')
@@ -596,7 +596,7 @@ def client_dashboard(request):
     employees = Employee.objects.filter(CompanyIdentity__in=companies)
 
     # Fetch supervisors related to the client
-    supervisors = Supervisor.objects.filter(client=client)  # Adjust the filter as per your model's relationship
+    supervisors = Supervisor.objects.filter(ClientIdentity=client)  # Adjust the filter as per your model's relationship
 
     client_form = ClientForm()
     company_form = CompanyForm()
@@ -721,6 +721,7 @@ def fetch_clients_for_group(request):
     client_list = list(clients)
     return JsonResponse({'clients': client_list})
 
+
 @login_required
 def create_supervisor(request):
     selected_client_id = request.GET.get('selected_client')
@@ -728,14 +729,75 @@ def create_supervisor(request):
     
     if request.method == 'POST':
         form = SupervisorForm(request.POST)
+        
         if form.is_valid():
             supervisor = form.save(commit=False)
-            supervisor.client = client
-            supervisor.user = request.user  # Assuming the supervisor will be linked to the user creating it
+            supervisor.ClientIdentity = client  # Assign client here
+            email = form.cleaned_data['Email']
+            #Get user
+            existing_user = User.objects.filter(email=email).exists()
+            if existing_user:
+                messages.error(request, 'Email already exists as a username. Please use a different email.')
+                return render(request, 'supervisor_create.html', {'form': form, 'selected_client_id': selected_client_id})
+            
+            # Assuming you have some method to generate a one-time password and send it
+            one_time_password = generate_one_time_password()
+            user = User.objects.create_user(username=email, email=email, password=one_time_password, user_type=User.SUPERVISOR)
+            send_one_time_password_email(email, one_time_password)  # Assuming you have this function
+            OneTimePassword.objects.create(user=user, otp=one_time_password)              
+            
+            supervisor.user = user
             supervisor.save()
-            # Redirect to a new URL, for example, the client dashboard
-            return redirect('client_dashboard')
+            
+            return redirect('client_dashboard')  # Redirect to the desired URL
+        else:
+            print(form.errors)
     else:
         form = SupervisorForm()
+    return render(request, 'supervisor_create.html', {'form': form, 'selected_client_id': selected_client_id,'client':client})
 
-    return render(request, 'supervisor_create.html', {'form': form, 'client': client})
+def supervisor_dashboard(request):
+    user = request.user
+    if not user.is_authenticated:
+        # Redirect to login page if the user is not authenticated
+        return redirect('login')
+
+    # Fetch the supervisor associated with the logged-in user
+    
+    supervisor = get_object_or_404(Supervisor, user_id=user)
+    #if not supervisor.exists():
+        # Handle the case where the user is not associated with any clients
+        # Redirect or display an appropriate message
+    #    return redirect('some_other_view')
+
+    # For simplicity, let's assume we're dealing with the first associated client
+    
+
+    # Filter other data based on the selected client
+    #companies = Company.objects.filter(ClientIdentity=client)
+    #subscriptions = Subscription.objects.filter(CompanyIdentity__in=companies)
+    #divisions = Division.objects.filter(CompanyIdentity__in=companies)
+    #employees = Employee.objects.filter(CompanyIdentity__in=companies)
+
+    # Fetch supervisors related to the client
+    supervisors = Supervisor.objects.filter(SupervisorIdentity=supervisor.SupervisorIdentity)  # Adjust the filter as per your model's relationship
+
+    #client_form = ClientForm()
+    #company_form = CompanyForm()
+    #subscription_form = SubscriptionForm()
+
+    context = {
+        #'companies': companies,
+        #'clients': clients,  # Include all clients associated with the user
+        #'subscriptions': subscriptions,
+        #'divisions': divisions,
+        #'employees': employees,
+        'supervisor': supervisor,  # Add supervisors to the context
+        'supervisors': supervisors,  # Add supervisors to the context
+        #'client_form': client_form,
+        #'company_form': company_form,
+        #'subscription_form': subscription_form,
+
+        'selected_supervisor_id': supervisor.ClientIdentity,  # Automatically select the first associated client
+    }
+    return render(request, 'supervisor_dashboard.html', context)

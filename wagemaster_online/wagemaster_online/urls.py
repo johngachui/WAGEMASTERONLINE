@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from wagemaster_online.views import company_detail, company_list, company_create, company_update, company_delete,create_client
-from wagemaster_online.views import UserLoginView, register, home,administrator_dashboard, client_dashboard,client_list
+from wagemaster_online.views import UserLoginView, register, home,administrator_dashboard, client_dashboard,client_list, supervisor_dashboard
 from wagemaster_online.views import dashboard, fetch_companies,subscription_create,fetch_subscriptions, create_supervisor
 from wagemaster_online.views import client_update,check_username_availability,subscription_update,set_new_password
 from django.contrib.auth import views as auth_views
@@ -67,4 +67,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('supervisor/create/', create_supervisor, name='supervisor_create'),
+    path('supervisor/dashboard/', supervisor_dashboard, name='supervisor_dashboard'),
 ]
