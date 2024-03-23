@@ -95,7 +95,8 @@ class Division(models.Model):
     CompanyIdentity = models.ForeignKey(
         Company,
         on_delete=models.CASCADE,
-        to_field='CompanyIdentity'
+        to_field='CompanyIdentity',
+        db_column='CompanyIdentity'
     )
     DivisionName = models.CharField(max_length=255)
     CompanyKey = models.TextField(default ="n/a")
@@ -110,16 +111,17 @@ class Employee(models.Model):
     CompanyIdentity = models.ForeignKey(
         Company,
         on_delete=models.CASCADE,
-        to_field='CompanyIdentity'
+        to_field='CompanyIdentity',
+        db_column='CompanyIdentity'
     )
     DivisionIdentity = models.ForeignKey(
         Division,
         on_delete=models.CASCADE,
-        to_field='DivisionIdentity'
+        to_field='DivisionIdentity',
+        db_column='DivisionIdentity'
     )
     StaffNo = models.CharField(max_length=255)  
     StaffName = models.CharField(max_length=255)
-    StaffIDNo = models.CharField(max_length=255)
     Email = models.EmailField()
     Employed = models.BooleanField()
     EmployeeKey = models.TextField(default ="n/a")
@@ -149,11 +151,7 @@ class Supervisor(models.Model):
 
 
 class LeaveBalance(models.Model):
-    StaffIdentity = models.ForeignKey(
-        Employee,
-        on_delete=models.CASCADE,
-        to_field='StaffIdentity'
-    )
+    employee = models.OneToOneField(Employee, on_delete=models.CASCADE, primary_key=True, db_column='StaffIdentity', related_name='leave_balance')
     AnnualBfwd = models.DecimalField(max_digits=10, decimal_places=2)
     AnnualCfwd = models.DecimalField(max_digits=10, decimal_places=2)
     Earned = models.DecimalField(max_digits=10, decimal_places=2)
